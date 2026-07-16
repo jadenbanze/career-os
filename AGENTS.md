@@ -72,6 +72,25 @@ Rust must be on PATH — source it first: `. "$HOME/.cargo/env"`
   `/packet` route); Markdown/JSON export uses the dialog + fs plugins.
 - Reminders run once/day at startup (`src/features/reminders/reminders.ts`).
 
+## Releases & auto-update
+
+- **Updater signing key** lives at `~/.tauri/career-os-updater.key` (private — never
+  committed; `.pub` holds the public key that's embedded in `tauri.conf.json`).
+- **Config:** `plugins.updater` (endpoint + pubkey) and `bundle.createUpdaterArtifacts`
+  in `tauri.conf.json`; on-launch check in `src/features/updates/update-checker.ts`.
+- **CI:** `.github/workflows/release.yml` (tauri-action) builds a signed universal
+  macOS release on `v*` tags. Requires two repo secrets:
+  - `TAURI_SIGNING_PRIVATE_KEY` — contents of `~/.tauri/career-os-updater.key`
+  - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — empty (key was created without one)
+- **Cut a release:** bump `version` in `tauri.conf.json`, then
+  `git tag v0.2.0 && git push origin v0.2.0`. CI creates a **draft** release —
+  publish it so `releases/latest` resolves and clients update.
+- **Local signed build:**
+  `TAURI_SIGNING_PRIVATE_KEY="$HOME/.tauri/career-os-updater.key" TAURI_SIGNING_PRIVATE_KEY_PASSWORD="" npm run tauri build`
+- **Private-repo caveat:** the in-app updater downloads from GitHub Releases; on a
+  **private** repo those assets need auth, so auto-update only works once the repo
+  (or releases) are public, or you add an auth header to the updater request.
+
 ## Corporate network note (shadcn CLI)
 
 `registry.npmjs.org` is reachable, but `ui.shadcn.com` is behind a TLS-inspecting proxy,
