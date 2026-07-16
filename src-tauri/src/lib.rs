@@ -1,0 +1,52 @@
+mod github;
+mod jira;
+mod secrets;
+
+use tauri_plugin_sql::{Migration, MigrationKind};
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    // Schema is authored in Drizzle (src/db/schema.ts); `drizzle-kit generate`
+    // emits the SQL embedded below. tauri-plugin-sql applies pending migrations
+    // when the database is first loaded from the frontend.
+    let migrations = vec![
+        Migration {
+            version: 1,
+            description: "create_initial_tables",
+            sql: include_str!("../migrations/0000_unique_prodigy.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
+            description: "github_feedback_oneonone_and_brag_links",
+            sql: include_str!("../migrations/0001_naive_norman_osborn.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 3,
+            description: "add_sort_indexes",
+            sql: include_str!("../migrations/0002_pink_scarlet_witch.sql"),
+            kind: MigrationKind::Up,
+        },
+    ];
+
+    tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:career_os.db", migrations)
+                .build(),
+        )
+        .invoke_handler(tauri::generate_handler![
+            secrets::set_secret,
+            secrets::has_secret,
+            secrets::delete_secret,
+            jira::jira_fetch_issues,
+            github::github_sync,
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
