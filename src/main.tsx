@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { initDb } from "@/db/client";
 import { runReminders } from "@/features/reminders/reminders";
+import { checkForUpdates } from "@/features/updates/update-checker";
 import { queryClient } from "@/lib/query-client";
 import { router } from "@/router";
 import "./index.css";
@@ -16,6 +17,9 @@ import "./index.css";
 initDb()
   .then(() => runReminders())
   .catch((e) => console.error("Database init failed", e));
+
+// Check for app updates (no-op in dev).
+void checkForUpdates();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
