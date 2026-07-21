@@ -1,23 +1,17 @@
 import { useEffect, useState } from "react";
+import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useCreateBrag } from "@/features/brag/use-brag";
-import { useCreateTask } from "@/features/tasks/use-tasks";
-import { useCreateEvent } from "@/features/timeline/use-timeline";
-
-const TYPES = [
-  { value: "task", label: "Task" },
-  { value: "win", label: "Win" },
-  { value: "event", label: "Event" },
-] as const;
+import { Textarea } from "@/components/ui/textarea";
+import { useAppActions } from "./app-actions";
 
 export function QuickCaptureDialog({
   open,
@@ -26,31 +20,21 @@ export function QuickCaptureDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [type, setType] = useState<string>("task");
+  const actions = useAppActions();
   const [text, setText] = useState("");
-  const createTask = useCreateTask();
-  const createBrag = useCreateBrag();
-  const createEvent = useCreateEvent();
 
   useEffect(() => {
-    if (open) {
-      setText("");
-      setType("task");
-    }
+    if (open) setText("");
   }, [open]);
 
-  const submit = async () => {
-    const title = text.trim();
-    if (!title) return;
-    try {
-      if (type === "task") await createTask.mutateAsync({ title });
-      else if (type === "win") await createBrag.mutateAsync({ title });
-      else await createEvent.mutateAsync({ title, date: new Date() });
-      toast.success("Captured");
-      onOpenChange(false);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : String(e));
-    }
+  const submit = () => {
+    const clean = text.trim();
+    if (!clean) return;
+    actions.captureToInbox(clean);
+    toast.success("Captured to Inbox", {
+      description: "AI is sorting it — review and file it from your Inbox.",
+    });
+    onOpenChange(false);
   };
 
   return (
@@ -58,33 +42,30 @@ export function QuickCaptureDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Quick capture</DialogTitle>
+          <DialogDescription>
+            Dump anything — a win, task, or event. It lands in your Inbox and AI
+            categorizes it so you can organize later.
+          </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="flex gap-1.5">
-            {TYPES.map((t) => (
-              <Button
-                key={t.value}
-                type="button"
-                variant={type === t.value ? "default" : "outline"}
-                size="sm"
-                onClick={() => setType(t.value)}
-              >
-                {t.label}
-              </Button>
-            ))}
-          </div>
-          <Input
-            autoFocus
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                void submit();
-              }
-            }}
-            placeholder="Type it and hit Enter…"
-          />
+        <Textarea
+          autoFocus
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={3}
+          placeholder="e.g. At the MongoDB event networking with the data platform team"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              submit();
+            }
+          }}
+        />
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+            <Sparkles className="size-3" />
+            AI will categorize this · Enter to capture
+          </span>
+          <Button onClick={submit}>Capture</Button>
         </div>
       </DialogContent>
     </Dialog>

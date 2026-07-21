@@ -2,6 +2,7 @@ import {
   Activity,
   Award,
   CalendarClock,
+  Inbox,
   LayoutDashboard,
   ListTodo,
   MessageSquare,
@@ -21,6 +22,7 @@ export type NavItem = {
 
 export const primaryNav: NavItem[] = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard, description: "Your day at a glance" },
+  { title: "Inbox", url: "/inbox", icon: Inbox, description: "Quick captures to organize" },
   { title: "Tasks", url: "/tasks", icon: ListTodo, description: "Work tasks & JIRA issues" },
   { title: "Activity", url: "/activity", icon: Activity, description: "GitHub & velocity" },
 ];

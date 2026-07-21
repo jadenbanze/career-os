@@ -1,3 +1,4 @@
+mod ai;
 mod github;
 mod jira;
 mod secrets;
@@ -28,6 +29,12 @@ pub fn run() {
             sql: include_str!("../migrations/0002_pink_scarlet_witch.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 4,
+            description: "inbox_items_and_brag_size",
+            sql: include_str!("../migrations/0003_sudden_secret_warriors.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     #[allow(unused_mut)]
@@ -56,6 +63,7 @@ pub fn run() {
             secrets::delete_secret,
             jira::jira_fetch_issues,
             github::github_sync,
+            ai::ai_categorize,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

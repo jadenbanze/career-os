@@ -50,6 +50,8 @@ export const bragEntries = sqliteTable("brag_entries", {
   title: text("title").notNull(),
   description: text("description"),
   impact: text("impact"),
+  // small | medium | large
+  size: text("size"),
   date: integer("date", { mode: "timestamp_ms" }).notNull().$defaultFn(now),
   // JSON-encoded string array
   tags: text("tags"),
@@ -191,8 +193,37 @@ export const feedback = sqliteTable("feedback", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(now),
 }, (t) => [index("feedback_date_idx").on(t.date)]);
 
+/**
+ * Quick-capture inbox: raw notes dropped in with one keystroke, categorized and
+ * enriched by AI, then reviewed and filed into the right section later.
+ */
+export const inboxItems = sqliteTable(
+  "inbox_items",
+  {
+    id: text("id").primaryKey().$defaultFn(uuid),
+    text: text("text").notNull(),
+    // pending | filed | dismissed
+    status: text("status").notNull().default("pending"),
+    // AI enrichment state: idle | loading | done | error
+    aiState: text("ai_state").notNull().default("idle"),
+    // suggested target: win | task | event | goal | feedback | milestone
+    category: text("category"),
+    title: text("title"),
+    details: text("details"),
+    // small | medium | large (wins only)
+    size: text("size"),
+    tags: text("tags"), // JSON string array
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(now),
+  },
+  (t) => [index("inbox_status_idx").on(t.status, t.createdAt)],
+);
+
 export type Task = typeof tasks.$inferSelect;
 export type NewTask = typeof tasks.$inferInsert;
+export type InboxItem = typeof inboxItems.$inferSelect;
+export type NewInboxItem = typeof inboxItems.$inferInsert;
 export type GithubPr = typeof githubPrs.$inferSelect;
 export type GithubActivity = typeof githubActivity.$inferSelect;
 export type GithubEvent = typeof githubEvents.$inferSelect;

@@ -10,9 +10,11 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useInboxItems } from "@/features/inbox/use-inbox";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   growthNav,
@@ -29,6 +31,8 @@ function isActivePath(pathname: string, url: string): boolean {
 
 function NavMenu({ items }: { items: NavItem[] }) {
   const { pathname } = useLocation();
+  const { data: inbox } = useInboxItems();
+  const inboxCount = inbox?.length ?? 0;
   return (
     <SidebarMenu>
       {items.map((item) => (
@@ -47,6 +51,9 @@ function NavMenu({ items }: { items: NavItem[] }) {
               <span>{item.title}</span>
             </Link>
           </SidebarMenuButton>
+          {item.url === "/inbox" && inboxCount > 0 ? (
+            <SidebarMenuBadge>{inboxCount}</SidebarMenuBadge>
+          ) : null}
         </SidebarMenuItem>
       ))}
     </SidebarMenu>

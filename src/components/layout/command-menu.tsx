@@ -100,9 +100,12 @@ export function CommandMenu({
         <CommandEmpty>No results found.</CommandEmpty>
 
         <CommandGroup heading="Actions">
-          <CommandItem value="quick capture new" onSelect={() => run(actions.openQuickCapture)}>
+          <CommandItem
+            value="quick capture inbox organize later"
+            onSelect={() => run(actions.openQuickCapture)}
+          >
             <Zap />
-            <span>Quick capture</span>
+            <span>Capture to Inbox</span>
           </CommandItem>
           <CommandItem value="new task" onSelect={() => run(actions.openTask)}>
             <Plus />

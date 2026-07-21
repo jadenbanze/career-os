@@ -6,9 +6,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { db } from "@/db/client";
+import { inboxItems } from "@/db/schema";
 import { BragDialog, type BragDefaults } from "@/features/brag/brag-dialog";
 import { GoalDialog } from "@/features/career/goal-dialog";
+import { enrichInbox } from "@/features/inbox/use-inbox";
 import { MilestoneDialog } from "@/features/promotion/milestone-dialog";
 import { EventDialog } from "@/features/timeline/event-dialog";
 import { TaskDialog } from "@/features/tasks/task-dialog";
@@ -23,6 +27,7 @@ type AppActions = {
   openEvent: () => void;
   openVision: () => void;
   openQuickCapture: () => void;
+  captureToInbox: (text: string) => void;
 };
 
 const AppActionsContext = createContext<AppActions | null>(null);
@@ -43,6 +48,23 @@ export function AppActionsProvider({ children }: { children: ReactNode }) {
   const [vision, setVision] = useState(false);
   const [quick, setQuick] = useState(false);
 
+  const qc = useQueryClient();
+  // Lives on the always-mounted provider so AI enrichment finishes even after
+  // the capture dialog closes.
+  const capture = useMutation({
+    mutationFn: async (text: string) => {
+      const clean = text.trim();
+      if (!clean) return;
+      const id = crypto.randomUUID();
+      await db
+        .insert(inboxItems)
+        .values({ id, text: clean, status: "pending", aiState: "loading" });
+      qc.invalidateQueries({ queryKey: ["inbox", "pending"] });
+      await enrichInbox(id, clean);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["inbox", "pending"] }),
+  });
+
   const value = useMemo<AppActions>(
     () => ({
       openTask: () => setTask(true),
@@ -55,8 +77,9 @@ export function AppActionsProvider({ children }: { children: ReactNode }) {
       openEvent: () => setEvent(true),
       openVision: () => setVision(true),
       openQuickCapture: () => setQuick(true),
+      captureToInbox: (text: string) => capture.mutate(text),
     }),
-    [],
+    [capture],
   );
 
   useEffect(() => {
