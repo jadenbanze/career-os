@@ -26,21 +26,26 @@ function HotkeyRecorder({
   useEffect(() => {
     if (!recording) return;
     const onKey = (e: KeyboardEvent) => {
+      // Wait while only modifier keys are held down — don't capture yet.
+      if (["Shift", "Control", "Alt", "Meta", "OS"].includes(e.key)) return;
       e.preventDefault();
       e.stopImmediatePropagation();
-      if (e.key === "Escape") {
-        setRecording(false);
-        return;
+      // Any real key press ends recording, so we can never get stuck
+      // swallowing keystrokes: a valid chord is saved, anything else cancels.
+      if (e.key !== "Escape") {
+        const combo = eventToCombo(e);
+        if (combo) onChange(combo);
       }
-      const combo = eventToCombo(e);
-      if (combo) {
-        onChange(combo);
-        setRecording(false);
-      }
+      setRecording(false);
     };
+    const stop = () => setRecording(false);
     // Capture phase so we intercept before the app's own hotkey listeners.
     window.addEventListener("keydown", onKey, true);
-    return () => window.removeEventListener("keydown", onKey, true);
+    window.addEventListener("blur", stop);
+    return () => {
+      window.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("blur", stop);
+    };
   }, [recording, onChange]);
 
   return (

@@ -18,7 +18,12 @@ export function useHotkeys() {
       );
       return Object.fromEntries(entries) as Record<HotkeyAction, string>;
     },
+    // Show defaults instantly, but always re-read persisted values on mount
+    // (overrides the app-wide staleTime: Infinity, which would otherwise keep
+    // the initialData forever and ignore saved custom combos after a restart).
     initialData: DEFAULT_HOTKEYS,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 
