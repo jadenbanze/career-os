@@ -27,7 +27,12 @@ import type { Task } from "@/db/schema";
 import { useConfirm } from "@/components/confirm";
 import { useAppActions } from "@/components/layout/app-actions";
 import { JiraKeyBadge } from "@/features/jira/jira-key-badge";
-import { PRIORITY_BADGE, TASK_STATUSES, type TaskPriority } from "./constants";
+import {
+  PRIORITY_ACCENT,
+  PRIORITY_BADGE,
+  TASK_STATUSES,
+  type TaskPriority,
+} from "./constants";
 import { suggestWin } from "./suggest-win";
 import { useDeleteTask, useUpdateTask } from "./use-tasks";
 
@@ -54,7 +59,8 @@ function TaskCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "bg-card group rounded-lg border p-3 shadow-xs",
+        "bg-card group rounded-lg border border-l-2 p-3 shadow-xs",
+        PRIORITY_ACCENT[task.priority as TaskPriority],
         isDragging && "opacity-40",
         overlay && "shadow-lg",
       )}

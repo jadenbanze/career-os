@@ -1,5 +1,7 @@
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { listen } from "@tauri-apps/api/event";
 import { Search } from "lucide-react";
 
 import { RouteFallback } from "@/components/route-fallback";
@@ -9,8 +11,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { Onboarding } from "@/features/onboarding/onboarding";
 import { AutoSync } from "@/features/sync/auto-sync";
 import { UpdateAgent } from "@/features/updates/update-agent";
 import { AppActionsProvider } from "./app-actions";
@@ -19,6 +21,17 @@ import { CommandMenu } from "./command-menu";
 
 export function RootLayout() {
   const [commandOpen, setCommandOpen] = useState(false);
+  const qc = useQueryClient();
+
+  // Refresh the Inbox when the global quick bar captures something.
+  useEffect(() => {
+    const unlisten = listen("careeros://capture", () => {
+      qc.invalidateQueries({ queryKey: ["inbox", "pending"] });
+    });
+    return () => {
+      void unlisten.then((f) => f());
+    };
+  }, [qc]);
 
   return (
     <AppActionsProvider>
@@ -27,11 +40,10 @@ export function RootLayout() {
       <SidebarInset className="h-svh overflow-hidden">
         <header className="bg-background/80 sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4 backdrop-blur">
           <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-1 h-4" />
           <Button
             variant="outline"
             size="sm"
-            className="text-muted-foreground h-8 w-full max-w-72 justify-start gap-2 font-normal"
+            className="text-muted-foreground ml-1 h-8 w-full max-w-72 justify-start gap-2 font-normal"
             onClick={() => setCommandOpen(true)}
           >
             <Search className="size-4" />
@@ -48,6 +60,7 @@ export function RootLayout() {
         </main>
       </SidebarInset>
       <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} />
+      <Onboarding />
       <AutoSync />
       <UpdateAgent />
     </SidebarProvider>

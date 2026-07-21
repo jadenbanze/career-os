@@ -30,6 +30,20 @@ function isActivePath(pathname: string, url: string): boolean {
   return pathname === url || pathname.startsWith(`${url}/`);
 }
 
+/** Subtle per-section icon colors — a Notion-style pop of color. */
+const NAV_ICON_COLOR: Record<string, string> = {
+  "/": "text-sky-500",
+  "/inbox": "text-amber-500",
+  "/tasks": "text-blue-500",
+  "/activity": "text-violet-500",
+  "/brag": "text-yellow-500",
+  "/growth": "text-emerald-500",
+  "/feedback": "text-pink-500",
+  "/timeline": "text-orange-500",
+  "/tags": "text-teal-500",
+  "/graph": "text-indigo-500",
+};
+
 function NavMenu({ items }: { items: NavItem[] }) {
   const { pathname } = useLocation();
   const { data: inbox } = useInboxItems();
@@ -48,7 +62,7 @@ function NavMenu({ items }: { items: NavItem[] }) {
               onMouseEnter={() => prefetchRoute(item.url)}
               onFocus={() => prefetchRoute(item.url)}
             >
-              <item.icon />
+              <item.icon className={NAV_ICON_COLOR[item.url]} />
               <span>{item.title}</span>
             </Link>
           </SidebarMenuButton>

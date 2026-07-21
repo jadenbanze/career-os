@@ -36,17 +36,24 @@ function StatCard({
   value,
   icon: Icon,
   to,
+  tone,
 }: {
   label: string;
   value: number;
   icon: typeof ListTodo;
   to: string;
+  tone: string;
 }) {
   return (
     <Link to={to}>
       <Card className="hover:border-primary/40 transition-colors">
         <CardContent className="flex items-center gap-4 py-5">
-          <div className="bg-muted text-foreground flex size-10 items-center justify-center rounded-lg">
+          <div
+            className={cn(
+              "flex size-10 items-center justify-center rounded-lg",
+              tone,
+            )}
+          >
             <Icon className="size-5" />
           </div>
           <div>
@@ -101,10 +108,34 @@ export default function DashboardPage() {
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Open tasks" value={openTasks.length} icon={ListTodo} to="/tasks" />
-        <StatCard label="In progress" value={inProgress.length} icon={CircleDot} to="/tasks" />
-        <StatCard label="JIRA assigned" value={(jira ?? []).length} icon={Link2} to="/tasks" />
-        <StatCard label="Wins logged" value={(brag ?? []).length} icon={Award} to="/brag" />
+        <StatCard
+          label="Open tasks"
+          value={openTasks.length}
+          icon={ListTodo}
+          to="/tasks"
+          tone="bg-blue-500/15 text-blue-600 dark:text-blue-400"
+        />
+        <StatCard
+          label="In progress"
+          value={inProgress.length}
+          icon={CircleDot}
+          to="/tasks"
+          tone="bg-amber-500/15 text-amber-600 dark:text-amber-400"
+        />
+        <StatCard
+          label="JIRA assigned"
+          value={(jira ?? []).length}
+          icon={Link2}
+          to="/tasks"
+          tone="bg-violet-500/15 text-violet-600 dark:text-violet-400"
+        />
+        <StatCard
+          label="Wins logged"
+          value={(brag ?? []).length}
+          icon={Award}
+          to="/brag"
+          tone="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+        />
       </div>
 
       <Card className="mt-6">

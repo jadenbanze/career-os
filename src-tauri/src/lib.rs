@@ -62,13 +62,33 @@ pub fn run() {
                 .build(),
         );
 
-    // The updater is desktop-only.
+    // Desktop-only plugins.
     #[cfg(desktop)]
     {
-        builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+        builder = builder
+            .plugin(tauri_plugin_updater::Builder::new().build())
+            .plugin(tauri_plugin_global_shortcut::Builder::new().build());
     }
 
     builder
+        .setup(|_app| {
+            // Register the global quick-capture shortcut (⌘⇧Space) that toggles
+            // the always-on-top quick bar, à la Raycast.
+            #[cfg(desktop)]
+            {
+                use tauri_plugin_global_shortcut::{
+                    Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState,
+                };
+                let handle = _app.handle().clone();
+                let toggle = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::Space);
+                _app.global_shortcut().on_shortcut(toggle, move |_app, _sc, event| {
+                    if event.state() == ShortcutState::Pressed {
+                        toggle_quickbar(&handle);
+                    }
+                })?;
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             secrets::set_secret,
             secrets::has_secret,
@@ -79,4 +99,19 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+/// Show/hide the always-on-top quick-capture window.
+#[cfg(desktop)]
+fn toggle_quickbar(app: &tauri::AppHandle) {
+    use tauri::Manager;
+    if let Some(win) = app.get_webview_window("quickbar") {
+        if win.is_visible().unwrap_or(false) {
+            let _ = win.hide();
+        } else {
+            let _ = win.center();
+            let _ = win.show();
+            let _ = win.set_focus();
+        }
+    }
 }
