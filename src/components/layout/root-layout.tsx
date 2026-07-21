@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { formatCombo } from "@/features/hotkeys/hotkeys";
 import { useGlobalQuickBar } from "@/features/hotkeys/use-global-quickbar";
 import { useHotkeys } from "@/features/hotkeys/use-hotkeys";
+import { enrichInbox } from "@/features/inbox/use-inbox";
 import { Onboarding } from "@/features/onboarding/onboarding";
 import { AutoSync } from "@/features/sync/auto-sync";
 import { UpdateAgent } from "@/features/updates/update-agent";
@@ -28,11 +29,21 @@ export function RootLayout() {
   const hotkeys = useHotkeys().data;
   useGlobalQuickBar(hotkeys.quickBar);
 
-  // Refresh the Inbox when the global quick bar captures something.
+  // The global quick bar captures then closes; the main window enriches the
+  // new item (AI) and refreshes the Inbox.
   useEffect(() => {
-    const unlisten = listen("careeros://capture", () => {
-      qc.invalidateQueries({ queryKey: ["inbox", "pending"] });
-    });
+    const unlisten = listen<{ id?: string; text?: string } | null>(
+      "careeros://capture",
+      (e) => {
+        qc.invalidateQueries({ queryKey: ["inbox", "pending"] });
+        const p = e.payload;
+        if (p?.id && p.text) {
+          void enrichInbox(p.id, p.text).then(() =>
+            qc.invalidateQueries({ queryKey: ["inbox", "pending"] }),
+          );
+        }
+      },
+    );
     return () => {
       void unlisten.then((f) => f());
     };

@@ -5,9 +5,11 @@ import { ArrowUpRight, Inbox, Loader2, Sparkles } from "lucide-react";
 
 import { db } from "@/db/client";
 import { inboxItems } from "@/db/schema";
-import { enrichInbox } from "@/features/inbox/use-inbox";
 
-/** Broadcast so the main window refreshes its Inbox when a capture lands. */
+/**
+ * Broadcast so the (always-alive) main window refreshes its Inbox and runs the
+ * AI enrichment — this window is closed right after capturing.
+ */
 const CAPTURE_EVENT = "careeros://capture";
 
 export function QuickBar() {
@@ -20,7 +22,7 @@ export function QuickBar() {
   const hide = async () => {
     setText("");
     setBusy(false);
-    await win.hide();
+    await win.close();
   };
 
   useEffect(() => {
@@ -51,13 +53,12 @@ export function QuickBar() {
       await db
         .insert(inboxItems)
         .values({ id, text: clean, status: "pending", aiState: "loading" });
-      await emit(CAPTURE_EVENT);
+      // Hand off to the main window to enrich + refresh, then close.
+      await emit(CAPTURE_EVENT, { id, text: clean });
     } catch (e) {
       console.error("Quick capture failed", e);
     }
     await hide();
-    // Enrich after the window closes; refresh the main window again when done.
-    void enrichInbox(id, clean).then(() => emit(CAPTURE_EVENT));
   };
 
   const openApp = async () => {

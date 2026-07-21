@@ -19,20 +19,6 @@
         "height": 832,
         "minWidth": 900,
         "minHeight": 600
-      },
-      {
-        "label": "quickbar",
-        "url": "index.html",
-        "width": 640,
-        "height": 380,
-        "resizable": false,
-        "decorations": false,
-        "transparent": true,
-        "alwaysOnTop": true,
-        "center": true,
-        "visible": false,
-        "skipTaskbar": true,
-        "title": "Quick Capture"
       }
     ],
     "security": {

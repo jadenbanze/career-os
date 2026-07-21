@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Window } from "@tauri-apps/api/window";
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
 import { toast } from "sonner";
@@ -10,20 +10,34 @@ import { formatCombo, toAccelerator } from "./hotkeys";
 const KEYBOARD_SETTINGS_URL =
   "x-apple.systempreferences:com.apple.Keyboard-Settings.extension";
 
+/**
+ * Summon or dismiss the quick bar. It's created fresh each time and closed on
+ * dismiss (rather than kept hidden), because macOS suspends/terminates the
+ * webview of a hidden window — which left the bar broken until an app restart.
+ */
 async function toggleQuickBar() {
   try {
-    const win = await Window.getByLabel("quickbar");
-    if (!win) {
-      console.error("quickbar window not found");
+    const existing = await WebviewWindow.getByLabel("quickbar");
+    if (existing) {
+      await existing.close();
       return;
     }
-    if (await win.isVisible()) {
-      await win.hide();
-    } else {
-      await win.center();
-      await win.show();
-      await win.setFocus();
-    }
+    const win = new WebviewWindow("quickbar", {
+      url: "index.html",
+      width: 640,
+      height: 380,
+      resizable: false,
+      decorations: false,
+      transparent: true,
+      alwaysOnTop: true,
+      center: true,
+      focus: true,
+      skipTaskbar: true,
+      title: "Quick Capture",
+    });
+    win.once("tauri://error", (e) =>
+      console.error("quickbar window failed to open", e),
+    );
   } catch (e) {
     console.error("toggleQuickBar failed", e);
   }
