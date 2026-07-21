@@ -12,7 +12,6 @@ import {
   promotionMilestones,
   tasks,
   timelineEvents,
-  visionItems,
 } from "@/db/schema";
 import { parseTags } from "@/features/brag/use-brag";
 
@@ -67,26 +66,24 @@ export async function buildPromoMarkdown(): Promise<string> {
 
 /** Serializes all user-authored data to a JSON backup object. */
 export async function buildBackup(): Promise<Record<string, unknown>> {
-  const [tasksRows, brag, milestones, goals, events, vision, fb, oo] =
+  const [tasksRows, brag, milestones, goals, events, fb, oo] =
     await Promise.all([
       db.select().from(tasks),
       db.select().from(bragEntries),
       db.select().from(promotionMilestones),
       db.select().from(careerGoals),
       db.select().from(timelineEvents),
-      db.select().from(visionItems),
       db.select().from(feedback),
       db.select().from(oneOnOnes),
     ]);
   return {
     exportedAt: new Date().toISOString(),
-    version: 2,
+    version: 3,
     tasks: tasksRows,
     bragEntries: brag,
     promotionMilestones: milestones,
     careerGoals: goals,
     timelineEvents: events,
-    visionItems: vision,
     feedback: fb,
     oneOnOnes: oo,
   };

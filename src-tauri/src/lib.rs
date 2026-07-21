@@ -41,6 +41,12 @@ pub fn run() {
             sql: include_str!("../migrations/0004_fluffy_synch.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 6,
+            description: "drop_vision_items",
+            sql: include_str!("../migrations/0005_typical_stingray.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     #[allow(unused_mut)]

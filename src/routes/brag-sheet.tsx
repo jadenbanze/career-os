@@ -39,7 +39,7 @@ const LINK_ICON = {
 const LINK_DEST: Record<BragLinkType, string> = {
   task: "/tasks",
   jira: "/tasks",
-  milestone: "/promotion",
+  milestone: "/growth",
 };
 
 function BragCard({ entry, onEdit }: { entry: BragEntry; onEdit: (e: BragEntry) => void }) {

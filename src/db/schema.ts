@@ -93,19 +93,6 @@ export const careerGoals = sqliteTable("career_goals", {
 }, (t) => [index("career_created_idx").on(t.createdAt)]);
 
 /**
- * Vision board cards (aspirations, with optional imagery).
- */
-export const visionItems = sqliteTable("vision_items", {
-  id: text("id").primaryKey().$defaultFn(uuid),
-  title: text("title").notNull(),
-  note: text("note"),
-  imagePath: text("image_path"),
-  category: text("category"),
-  position: integer("position").notNull().default(0),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(now),
-}, (t) => [index("vision_pos_idx").on(t.position, t.createdAt)]);
-
-/**
  * Important dated events — work or personal.
  */
 export const timelineEvents = sqliteTable("timeline_events", {
@@ -276,8 +263,6 @@ export type PromotionMilestone = typeof promotionMilestones.$inferSelect;
 export type NewPromotionMilestone = typeof promotionMilestones.$inferInsert;
 export type CareerGoal = typeof careerGoals.$inferSelect;
 export type NewCareerGoal = typeof careerGoals.$inferInsert;
-export type VisionItem = typeof visionItems.$inferSelect;
-export type NewVisionItem = typeof visionItems.$inferInsert;
 export type TimelineEvent = typeof timelineEvents.$inferSelect;
 export type NewTimelineEvent = typeof timelineEvents.$inferInsert;
 export type AppSetting = typeof appSettings.$inferSelect;

@@ -8,7 +8,6 @@ import {
   Plus,
   RefreshCw,
   Rocket,
-  Sparkles,
   TrendingUp,
   Zap,
 } from "lucide-react";
@@ -127,10 +126,6 @@ export function CommandMenu({
             <CalendarClock />
             <span>New timeline event</span>
           </CommandItem>
-          <CommandItem value="new vision card" onSelect={() => run(actions.openVision)}>
-            <Sparkles />
-            <span>New vision card</span>
-          </CommandItem>
           <CommandItem value="sync jira" onSelect={() => runSync("JIRA", syncJira)}>
             <RefreshCw />
             <span>Sync JIRA</span>
@@ -177,7 +172,7 @@ export function CommandMenu({
             {goals && goals.length > 0 ? (
               <CommandGroup heading="Goals">
                 {goals.slice(0, MAX_RESULTS).map((g) => (
-                  <CommandItem key={g.id} value={`goal ${g.title}`} onSelect={() => go("/career")}>
+                  <CommandItem key={g.id} value={`goal ${g.title}`} onSelect={() => go("/growth")}>
                     <Rocket />
                     <span className="truncate">{g.title}</span>
                   </CommandItem>

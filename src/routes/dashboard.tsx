@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import {
@@ -13,12 +14,14 @@ import {
 import { Page, PageHeader } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { parseTags, useBragEntries } from "@/features/brag/use-brag";
 import { useJiraIssues } from "@/features/jira/use-jira";
 import { usePromotionMilestones } from "@/features/promotion/use-promotion";
 import { statusLabel } from "@/features/tasks/constants";
 import { useTasks } from "@/features/tasks/use-tasks";
 import { CATEGORY_TONE, useTimelineEvents } from "@/features/timeline/use-timeline";
+import { todayKey, useDailyNote, useSaveDailyNote } from "@/features/today/use-today";
 import { cn } from "@/lib/utils";
 
 function greeting(): string {
@@ -63,6 +66,14 @@ export default function DashboardPage() {
   const { data: milestones } = usePromotionMilestones();
   const { data: events } = useTimelineEvents();
 
+  const date = todayKey();
+  const { data: note } = useDailyNote(date);
+  const saveNote = useSaveDailyNote();
+  const [journal, setJournal] = useState("");
+  useEffect(() => {
+    setJournal(note?.notes ?? "");
+  }, [note]);
+
   const allTasks = tasks ?? [];
   const openTasks = allTasks.filter((t) => t.status !== "done");
   const inProgress = allTasks.filter((t) => t.status === "in_progress");
@@ -95,6 +106,21 @@ export default function DashboardPage() {
         <StatCard label="JIRA assigned" value={(jira ?? []).length} icon={Link2} to="/tasks" />
         <StatCard label="Wins logged" value={(brag ?? []).length} icon={Award} to="/brag" />
       </div>
+
+      <Card className="mt-6">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Journal</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            value={journal}
+            onChange={(e) => setJournal(e.target.value)}
+            onBlur={() => saveNote.mutate({ date, notes: journal })}
+            rows={3}
+            placeholder="How's today going? What did you ship or learn?"
+          />
+        </CardContent>
+      </Card>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card>
@@ -158,7 +184,7 @@ export default function DashboardPage() {
           <CardContent>
             {ms.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                Add milestones on the Promotion page to track your path.
+                Add milestones on the Growth page to track your path.
               </p>
             ) : (
               <div className="space-y-2">

@@ -16,7 +16,6 @@ import { enrichInbox } from "@/features/inbox/use-inbox";
 import { MilestoneDialog } from "@/features/promotion/milestone-dialog";
 import { EventDialog } from "@/features/timeline/event-dialog";
 import { TaskDialog } from "@/features/tasks/task-dialog";
-import { VisionDialog } from "@/features/vision/vision-dialog";
 import { QuickCaptureDialog } from "./quick-capture";
 
 type AppActions = {
@@ -25,7 +24,6 @@ type AppActions = {
   openMilestone: () => void;
   openGoal: () => void;
   openEvent: () => void;
-  openVision: () => void;
   openQuickCapture: () => void;
   captureToInbox: (text: string) => void;
 };
@@ -45,7 +43,6 @@ export function AppActionsProvider({ children }: { children: ReactNode }) {
   const [milestone, setMilestone] = useState(false);
   const [goal, setGoal] = useState(false);
   const [event, setEvent] = useState(false);
-  const [vision, setVision] = useState(false);
   const [quick, setQuick] = useState(false);
 
   const qc = useQueryClient();
@@ -75,7 +72,6 @@ export function AppActionsProvider({ children }: { children: ReactNode }) {
       openMilestone: () => setMilestone(true),
       openGoal: () => setGoal(true),
       openEvent: () => setEvent(true),
-      openVision: () => setVision(true),
       openQuickCapture: () => setQuick(true),
       captureToInbox: (text: string) => capture.mutate(text),
     }),
@@ -108,7 +104,6 @@ export function AppActionsProvider({ children }: { children: ReactNode }) {
       <MilestoneDialog open={milestone} onOpenChange={setMilestone} />
       <GoalDialog open={goal} onOpenChange={setGoal} />
       <EventDialog open={event} onOpenChange={setEvent} />
-      <VisionDialog open={vision} onOpenChange={setVision} />
       <QuickCaptureDialog open={quick} onOpenChange={setQuick} />
     </AppActionsContext.Provider>
   );

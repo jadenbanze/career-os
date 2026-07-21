@@ -39,8 +39,8 @@ export const ENTITY_LABEL: Record<EntityType, string> = {
 export const ENTITY_ROUTE: Record<EntityType, string> = {
   task: "/tasks",
   brag: "/brag",
-  goal: "/career",
-  milestone: "/promotion",
+  goal: "/growth",
+  milestone: "/growth",
   event: "/timeline",
   feedback: "/feedback",
   oneonone: "/feedback",
