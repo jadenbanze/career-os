@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -24,11 +25,6 @@ import { RelatedItems } from "@/features/links/related-items";
 import { parseTags, serializeTags } from "@/features/tags/use-tags";
 import { EVENT_CATEGORIES, useCreateEvent, useUpdateEvent } from "./use-timeline";
 
-function toDateInput(d: Date | null | undefined): string {
-  const dt = d ? new Date(d) : new Date();
-  return Number.isNaN(dt.getTime()) ? "" : dt.toISOString().slice(0, 10);
-}
-
 export function EventDialog({
   open,
   onOpenChange,
@@ -43,7 +39,7 @@ export function EventDialog({
   const update = useUpdateEvent();
 
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<Date | null>(null);
   const [category, setCategory] = useState("personal");
   const [notes, setNotes] = useState("");
   const [tags, setTags] = useState("");
@@ -51,7 +47,7 @@ export function EventDialog({
   useEffect(() => {
     if (!open) return;
     setTitle(event?.title ?? "");
-    setDate(toDateInput(event?.date ?? null));
+    setDate(event?.date ? new Date(event.date) : new Date());
     setCategory(event?.category ?? "personal");
     setNotes(event?.notes ?? "");
     setTags(parseTags(event?.tags).join(", "));
@@ -64,7 +60,7 @@ export function EventDialog({
     }
     const payload = {
       title: title.trim(),
-      date: date ? new Date(date) : new Date(),
+      date: date ?? new Date(),
       category,
       notes: notes.trim() || null,
       tags: serializeTags(tags),
@@ -103,12 +99,7 @@ export function EventDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ev-date">Date</Label>
-              <Input
-                id="ev-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
+              <DatePicker id="ev-date" value={date} onChange={setDate} />
             </div>
             <div className="space-y-2">
               <Label>Category</Label>

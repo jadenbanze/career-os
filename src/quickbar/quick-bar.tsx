@@ -14,6 +14,7 @@ export function QuickBar() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const focusedAt = useRef(0);
   const win = getCurrentWindow();
 
   const hide = async () => {
@@ -25,8 +26,15 @@ export function QuickBar() {
   useEffect(() => {
     inputRef.current?.focus();
     const unlisten = win.onFocusChanged(({ payload: focused }) => {
-      if (focused) inputRef.current?.focus();
-      else void hide(); // Raycast-style: dismiss when it loses focus
+      if (focused) {
+        focusedAt.current = Date.now();
+        // Re-focus the input each time the bar is summoned.
+        setTimeout(() => inputRef.current?.focus(), 20);
+      } else if (Date.now() - focusedAt.current > 350) {
+        // Raycast-style dismiss on blur — but ignore the focus-transition
+        // blip right as the window is being summoned, or it vanishes instantly.
+        void hide();
+      }
     });
     return () => {
       void unlisten.then((f) => f());

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -29,12 +30,6 @@ import {
   useUpdateGoal,
 } from "./use-career";
 
-function toDateInput(d: Date | null | undefined): string {
-  if (!d) return "";
-  const dt = new Date(d);
-  return Number.isNaN(dt.getTime()) ? "" : dt.toISOString().slice(0, 10);
-}
-
 export function GoalDialog({
   open,
   onOpenChange,
@@ -51,7 +46,7 @@ export function GoalDialog({
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<string>("Skill");
   const [status, setStatus] = useState("active");
-  const [targetDate, setTargetDate] = useState("");
+  const [targetDate, setTargetDate] = useState<Date | null>(null);
   const [progress, setProgress] = useState(0);
   const [notes, setNotes] = useState("");
   const [tags, setTags] = useState("");
@@ -61,7 +56,7 @@ export function GoalDialog({
     setTitle(goal?.title ?? "");
     setCategory(goal?.category ?? "Skill");
     setStatus(goal?.status ?? "active");
-    setTargetDate(toDateInput(goal?.targetDate ?? null));
+    setTargetDate(goal?.targetDate ? new Date(goal.targetDate) : null);
     setProgress(goal?.progress ?? 0);
     setNotes(goal?.notes ?? "");
     setTags(parseTags(goal?.tags).join(", "));
@@ -76,7 +71,7 @@ export function GoalDialog({
       title: title.trim(),
       category,
       status,
-      targetDate: targetDate ? new Date(targetDate) : null,
+      targetDate,
       progress,
       notes: notes.trim() || null,
       tags: serializeTags(tags),
@@ -146,11 +141,11 @@ export function GoalDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="goal-date">Target date</Label>
-            <Input
+            <DatePicker
               id="goal-date"
-              type="date"
               value={targetDate}
-              onChange={(e) => setTargetDate(e.target.value)}
+              onChange={setTargetDate}
+              placeholder="No target date"
             />
           </div>
           <div className="space-y-2">

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -28,11 +29,6 @@ import {
   useUpdateOneOnOne,
 } from "./use-feedback";
 
-function toDateInput(d: Date | null | undefined): string {
-  const dt = d ? new Date(d) : new Date();
-  return Number.isNaN(dt.getTime()) ? "" : dt.toISOString().slice(0, 10);
-}
-
 export function OneOnOneDialog({
   open,
   onOpenChange,
@@ -47,20 +43,20 @@ export function OneOnOneDialog({
   const update = useUpdateOneOnOne();
 
   const [person, setPerson] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<Date | null>(null);
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
     if (!open) return;
     setPerson(note?.person ?? "");
-    setDate(toDateInput(note?.date ?? null));
+    setDate(note?.date ? new Date(note.date) : new Date());
     setNotes(note?.notes ?? "");
   }, [open, note]);
 
   const submit = async () => {
     const payload = {
       person: person.trim() || null,
-      date: date ? new Date(date) : new Date(),
+      date: date ?? new Date(),
       notes: notes.trim() || null,
     };
     try {
@@ -97,12 +93,7 @@ export function OneOnOneDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="oo-date">Date</Label>
-              <Input
-                id="oo-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
+              <DatePicker id="oo-date" value={date} onChange={setDate} />
             </div>
           </div>
           <div className="space-y-2">
@@ -143,14 +134,14 @@ export function FeedbackDialog({
   const update = useUpdateFeedback();
 
   const [source, setSource] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<Date | null>(null);
   const [kind, setKind] = useState("praise");
   const [content, setContent] = useState("");
 
   useEffect(() => {
     if (!open) return;
     setSource(entry?.source ?? "");
-    setDate(toDateInput(entry?.date ?? null));
+    setDate(entry?.date ? new Date(entry.date) : new Date());
     setKind(entry?.kind ?? "praise");
     setContent(entry?.content ?? "");
   }, [open, entry]);
@@ -162,7 +153,7 @@ export function FeedbackDialog({
     }
     const payload = {
       source: source.trim() || null,
-      date: date ? new Date(date) : new Date(),
+      date: date ?? new Date(),
       kind,
       content: content.trim(),
     };
@@ -200,12 +191,7 @@ export function FeedbackDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="fb-date">Date</Label>
-              <Input
-                id="fb-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
+              <DatePicker id="fb-date" value={date} onChange={setDate} />
             </div>
           </div>
           <div className="space-y-2">

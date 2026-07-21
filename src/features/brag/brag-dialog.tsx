@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -23,11 +24,6 @@ export type BragDefaults = {
   links?: BragLink[];
 };
 
-function toDateInput(d: Date | null | undefined): string {
-  const dt = d ? new Date(d) : new Date();
-  return Number.isNaN(dt.getTime()) ? "" : dt.toISOString().slice(0, 10);
-}
-
 export function BragDialog({
   open,
   onOpenChange,
@@ -46,7 +42,7 @@ export function BragDialog({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [impact, setImpact] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<Date | null>(null);
   const [tags, setTags] = useState("");
   const [links, setLinks] = useState<BragLink[]>([]);
 
@@ -55,7 +51,7 @@ export function BragDialog({
     setTitle(entry?.title ?? defaults?.title ?? "");
     setDescription(entry?.description ?? defaults?.description ?? "");
     setImpact(entry?.impact ?? "");
-    setDate(toDateInput(entry?.date ?? null));
+    setDate(entry?.date ? new Date(entry.date) : new Date());
     setTags(parseTags(entry?.tags).join(", "));
     setLinks(entry ? parseLinks(entry.links) : (defaults?.links ?? []));
   }, [open, entry, defaults]);
@@ -73,7 +69,7 @@ export function BragDialog({
       title: title.trim(),
       description: description.trim() || null,
       impact: impact.trim() || null,
-      date: date ? new Date(date) : new Date(),
+      date: date ?? new Date(),
       tags: tagList.length ? JSON.stringify(tagList) : null,
       links: serializeLinks(links),
     };
@@ -130,12 +126,7 @@ export function BragDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="brag-date">Date</Label>
-              <Input
-                id="brag-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
+              <DatePicker id="brag-date" value={date} onChange={setDate} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="brag-tags">Tags</Label>

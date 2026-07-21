@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -28,12 +29,6 @@ import {
   useUpdateMilestone,
 } from "./use-promotion";
 
-function toDateInput(d: Date | null | undefined): string {
-  if (!d) return "";
-  const dt = new Date(d);
-  return Number.isNaN(dt.getTime()) ? "" : dt.toISOString().slice(0, 10);
-}
-
 export function MilestoneDialog({
   open,
   onOpenChange,
@@ -50,7 +45,7 @@ export function MilestoneDialog({
   const [title, setTitle] = useState("");
   const [targetLevel, setTargetLevel] = useState("");
   const [status, setStatus] = useState("not_started");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState<Date | null>(null);
   const [notes, setNotes] = useState("");
   const [tags, setTags] = useState("");
 
@@ -59,7 +54,7 @@ export function MilestoneDialog({
     setTitle(milestone?.title ?? "");
     setTargetLevel(milestone?.targetLevel ?? "");
     setStatus(milestone?.status ?? "not_started");
-    setDueDate(toDateInput(milestone?.dueDate ?? null));
+    setDueDate(milestone?.dueDate ? new Date(milestone.dueDate) : null);
     setNotes(milestone?.notes ?? "");
     setTags(parseTags(milestone?.tags).join(", "));
   }, [open, milestone]);
@@ -73,7 +68,7 @@ export function MilestoneDialog({
       title: title.trim(),
       targetLevel: targetLevel.trim() || null,
       status,
-      dueDate: dueDate ? new Date(dueDate) : null,
+      dueDate,
       notes: notes.trim() || null,
       tags: serializeTags(tags),
     };
@@ -120,11 +115,11 @@ export function MilestoneDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="ms-due">Target date</Label>
-              <Input
+              <DatePicker
                 id="ms-due"
-                type="date"
                 value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
+                onChange={setDueDate}
+                placeholder="No target date"
               />
             </div>
           </div>

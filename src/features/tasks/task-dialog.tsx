@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -27,12 +28,6 @@ import { JiraLinkPicker } from "./jira-link-picker";
 import { suggestWin } from "./suggest-win";
 import { useCreateTask, useUpdateTask } from "./use-tasks";
 
-function toDateInput(d: Date | null | undefined): string {
-  if (!d) return "";
-  const dt = new Date(d);
-  return Number.isNaN(dt.getTime()) ? "" : dt.toISOString().slice(0, 10);
-}
-
 export function TaskDialog({
   open,
   onOpenChange,
@@ -54,7 +49,7 @@ export function TaskDialog({
   const [status, setStatus] = useState("todo");
   const [priority, setPriority] = useState("medium");
   const [owner, setOwner] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState<Date | null>(null);
   const [jiraKey, setJiraKey] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,7 +59,7 @@ export function TaskDialog({
     setStatus(task?.status ?? defaultStatus ?? "todo");
     setPriority(task?.priority ?? "medium");
     setOwner(task?.owner ?? "");
-    setDueDate(toDateInput(task?.dueDate ?? null));
+    setDueDate(task?.dueDate ? new Date(task.dueDate) : null);
     setJiraKey(task?.jiraKey ?? null);
   }, [open, task, defaultStatus]);
 
@@ -79,7 +74,7 @@ export function TaskDialog({
       status,
       priority,
       owner: owner.trim() || null,
-      dueDate: dueDate ? new Date(dueDate) : null,
+      dueDate,
       jiraKey,
     };
     try {
@@ -168,11 +163,11 @@ export function TaskDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-due">Due date</Label>
-              <Input
+              <DatePicker
                 id="task-due"
-                type="date"
                 value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
+                onChange={setDueDate}
+                placeholder="No due date"
               />
             </div>
           </div>

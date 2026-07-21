@@ -6,14 +6,21 @@ import { toast } from "sonner";
 import { formatCombo, toAccelerator } from "./hotkeys";
 
 async function toggleQuickBar() {
-  const win = await Window.getByLabel("quickbar");
-  if (!win) return;
-  if (await win.isVisible()) {
-    await win.hide();
-  } else {
-    await win.center();
-    await win.show();
-    await win.setFocus();
+  try {
+    const win = await Window.getByLabel("quickbar");
+    if (!win) {
+      console.error("quickbar window not found");
+      return;
+    }
+    if (await win.isVisible()) {
+      await win.hide();
+    } else {
+      await win.center();
+      await win.show();
+      await win.setFocus();
+    }
+  } catch (e) {
+    console.error("toggleQuickBar failed", e);
   }
 }
 
