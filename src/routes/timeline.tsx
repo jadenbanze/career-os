@@ -11,10 +11,16 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { TimelineEvent } from "@/db/schema";
+import {
+  addToAppleCalendar,
+  addToGoogleCalendar,
+  type CalEvent,
+} from "@/features/calendar/calendar";
 import { EventDialog } from "@/features/timeline/event-dialog";
 import {
   CATEGORY_TONE,
@@ -42,6 +48,21 @@ export default function TimelinePage() {
   const openNew = () => {
     setEditing(null);
     setDialogOpen(true);
+  };
+
+  const addToCalendar = async (e: TimelineEvent, target: "google" | "apple") => {
+    const cal: CalEvent = {
+      uid: e.id,
+      title: e.title,
+      date: new Date(e.date),
+      description: e.notes ?? undefined,
+    };
+    try {
+      if (target === "google") await addToGoogleCalendar(cal);
+      else await addToAppleCalendar(cal);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
   };
 
   const grouped = groupByYear(events ?? []);
@@ -112,6 +133,13 @@ export default function TimelinePage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onSelect={() => addToCalendar(e, "google")}>
+                            Add to Google Calendar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => addToCalendar(e, "apple")}>
+                            Add to Apple Calendar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onSelect={() => {
                               setEditing(e);

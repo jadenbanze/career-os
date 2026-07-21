@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { PromotionMilestone } from "@/db/schema";
+import { RelatedItems } from "@/features/links/related-items";
+import { parseTags, serializeTags } from "@/features/tags/use-tags";
 import {
   MILESTONE_STATUSES,
   useCreateMilestone,
@@ -50,6 +52,7 @@ export function MilestoneDialog({
   const [status, setStatus] = useState("not_started");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [tags, setTags] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -58,6 +61,7 @@ export function MilestoneDialog({
     setStatus(milestone?.status ?? "not_started");
     setDueDate(toDateInput(milestone?.dueDate ?? null));
     setNotes(milestone?.notes ?? "");
+    setTags(parseTags(milestone?.tags).join(", "));
   }, [open, milestone]);
 
   const submit = async () => {
@@ -71,6 +75,7 @@ export function MilestoneDialog({
       status,
       dueDate: dueDate ? new Date(dueDate) : null,
       notes: notes.trim() || null,
+      tags: serializeTags(tags),
     };
     try {
       if (isEdit && milestone) {
@@ -148,6 +153,18 @@ export function MilestoneDialog({
               placeholder="What does 'done' look like? Link supporting work..."
             />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="ms-tags">Tags</Label>
+            <Input
+              id="ms-tags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="scope, leadership"
+            />
+          </div>
+          {isEdit && milestone ? (
+            <RelatedItems type="milestone" id={milestone.id} />
+          ) : null}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

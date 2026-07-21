@@ -35,6 +35,12 @@ pub fn run() {
             sql: include_str!("../migrations/0003_sudden_secret_warriors.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 5,
+            description: "links_daily_notes_and_tags",
+            sql: include_str!("../migrations/0004_fluffy_synch.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     #[allow(unused_mut)]

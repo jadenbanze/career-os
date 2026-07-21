@@ -15,6 +15,7 @@ export const router = createHashRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <Pages.Dashboard /> },
+      { path: "today", element: <Pages.Today /> },
       { path: "inbox", element: <Pages.Inbox /> },
       { path: "tasks", element: <Pages.Tasks /> },
       { path: "activity", element: <Pages.Activity /> },
@@ -24,6 +25,8 @@ export const router = createHashRouter([
       { path: "feedback", element: <Pages.Feedback /> },
       { path: "vision", element: <Pages.Vision /> },
       { path: "timeline", element: <Pages.Timeline /> },
+      { path: "tags", element: <Pages.Tags /> },
+      { path: "graph", element: <Pages.Graph /> },
       { path: "settings", element: <Pages.Settings /> },
     ],
   },

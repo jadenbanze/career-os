@@ -21,6 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { Task } from "@/db/schema";
 import { useAppActions } from "@/components/layout/app-actions";
+import { RelatedItems } from "@/features/links/related-items";
 import { TASK_PRIORITIES, TASK_STATUSES } from "./constants";
 import { JiraLinkPicker } from "./jira-link-picker";
 import { suggestWin } from "./suggest-win";
@@ -179,6 +180,7 @@ export function TaskDialog({
             <Label>JIRA issue</Label>
             <JiraLinkPicker value={jiraKey} onChange={setJiraKey} />
           </div>
+          {isEdit && task ? <RelatedItems type="task" id={task.id} /> : null}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

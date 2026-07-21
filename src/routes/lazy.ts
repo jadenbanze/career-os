@@ -4,6 +4,7 @@ import { lazy } from "react";
 // them and the sidebar can prefetch the same chunk on hover.
 export const routeImporters = {
   "/": () => import("@/routes/dashboard"),
+  "/today": () => import("@/routes/today"),
   "/inbox": () => import("@/routes/inbox"),
   "/tasks": () => import("@/routes/tasks"),
   "/activity": () => import("@/routes/activity"),
@@ -13,11 +14,14 @@ export const routeImporters = {
   "/feedback": () => import("@/routes/feedback"),
   "/vision": () => import("@/routes/vision-board"),
   "/timeline": () => import("@/routes/timeline"),
+  "/tags": () => import("@/routes/tags"),
+  "/graph": () => import("@/routes/graph"),
   "/settings": () => import("@/routes/settings"),
 } as const;
 
 export const Pages = {
   Dashboard: lazy(routeImporters["/"]),
+  Today: lazy(routeImporters["/today"]),
   Inbox: lazy(routeImporters["/inbox"]),
   Tasks: lazy(routeImporters["/tasks"]),
   Activity: lazy(routeImporters["/activity"]),
@@ -27,6 +31,8 @@ export const Pages = {
   Feedback: lazy(routeImporters["/feedback"]),
   Vision: lazy(routeImporters["/vision"]),
   Timeline: lazy(routeImporters["/timeline"]),
+  Tags: lazy(routeImporters["/tags"]),
+  Graph: lazy(routeImporters["/graph"]),
   Settings: lazy(routeImporters["/settings"]),
   Packet: lazy(() => import("@/routes/packet")),
 };

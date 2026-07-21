@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
+  CalendarDays,
   CheckCircle2,
   Database,
   ExternalLink,
@@ -25,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AiSettingsCard } from "@/features/ai/ai-settings-card";
+import { exportCalendarIcs } from "@/features/calendar/calendar";
 import { savePromoPacket, saveBackup } from "@/features/export/export";
 import { GithubSettingsCard } from "@/features/github/github-settings-card";
 import { useSyncJira } from "@/features/jira/use-jira";
@@ -55,6 +57,13 @@ export default function SettingsPage() {
   const backup = async () => {
     try {
       if (await saveBackup()) toast.success("Backup saved");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+    }
+  };
+  const exportCalendar = async () => {
+    try {
+      if (await exportCalendarIcs()) toast.success("Calendar exported (.ics)");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
     }
@@ -222,6 +231,10 @@ export default function SettingsPage() {
             <Button variant="outline" onClick={backup}>
               <Database className="size-4" />
               Back up data (.json)
+            </Button>
+            <Button variant="outline" onClick={exportCalendar}>
+              <CalendarDays className="size-4" />
+              Export calendar (.ics)
             </Button>
           </CardContent>
         </Card>

@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { CareerGoal } from "@/db/schema";
+import { RelatedItems } from "@/features/links/related-items";
+import { parseTags, serializeTags } from "@/features/tags/use-tags";
 import {
   GOAL_CATEGORIES,
   GOAL_STATUSES,
@@ -52,6 +54,7 @@ export function GoalDialog({
   const [targetDate, setTargetDate] = useState("");
   const [progress, setProgress] = useState(0);
   const [notes, setNotes] = useState("");
+  const [tags, setTags] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -61,6 +64,7 @@ export function GoalDialog({
     setTargetDate(toDateInput(goal?.targetDate ?? null));
     setProgress(goal?.progress ?? 0);
     setNotes(goal?.notes ?? "");
+    setTags(parseTags(goal?.tags).join(", "));
   }, [open, goal]);
 
   const submit = async () => {
@@ -75,6 +79,7 @@ export function GoalDialog({
       targetDate: targetDate ? new Date(targetDate) : null,
       progress,
       notes: notes.trim() || null,
+      tags: serializeTags(tags),
     };
     try {
       if (isEdit && goal) {
@@ -176,6 +181,16 @@ export function GoalDialog({
               placeholder="Resources, mentors, next steps..."
             />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="goal-tags">Tags</Label>
+            <Input
+              id="goal-tags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="leadership, mentoring"
+            />
+          </div>
+          {isEdit && goal ? <RelatedItems type="goal" id={goal.id} /> : null}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

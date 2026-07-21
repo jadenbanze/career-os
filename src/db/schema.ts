@@ -71,6 +71,7 @@ export const promotionMilestones = sqliteTable("promotion_milestones", {
   status: text("status").notNull().default("not_started"),
   dueDate: integer("due_date", { mode: "timestamp_ms" }),
   notes: text("notes"),
+  tags: text("tags"),
   position: integer("position").notNull().default(0),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(now),
 }, (t) => [index("promo_pos_idx").on(t.position, t.createdAt)]);
@@ -87,6 +88,7 @@ export const careerGoals = sqliteTable("career_goals", {
   targetDate: integer("target_date", { mode: "timestamp_ms" }),
   progress: integer("progress").notNull().default(0),
   notes: text("notes"),
+  tags: text("tags"),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(now),
 }, (t) => [index("career_created_idx").on(t.createdAt)]);
 
@@ -113,6 +115,7 @@ export const timelineEvents = sqliteTable("timeline_events", {
   // work | personal | milestone
   category: text("category").notNull().default("personal"),
   notes: text("notes"),
+  tags: text("tags"),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(now),
 }, (t) => [index("timeline_date_idx").on(t.date)]);
 
@@ -220,10 +223,45 @@ export const inboxItems = sqliteTable(
   (t) => [index("inbox_status_idx").on(t.status, t.createdAt)],
 );
 
+/**
+ * Generic bidirectional links between any two items (Obsidian-style backlinks).
+ * A single row represents one edge; backlinks are found by querying either end.
+ */
+export const links = sqliteTable(
+  "links",
+  {
+    id: text("id").primaryKey().$defaultFn(uuid),
+    sourceType: text("source_type").notNull(),
+    sourceId: text("source_id").notNull(),
+    targetType: text("target_type").notNull(),
+    targetId: text("target_id").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(now),
+  },
+  (t) => [
+    index("links_source_idx").on(t.sourceType, t.sourceId),
+    index("links_target_idx").on(t.targetType, t.targetId),
+  ],
+);
+
+/**
+ * One journal entry per calendar day (the Obsidian-style "daily note").
+ */
+export const dailyNotes = sqliteTable("daily_notes", {
+  date: text("date").primaryKey(), // YYYY-MM-DD
+  notes: text("notes"),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(now),
+});
+
 export type Task = typeof tasks.$inferSelect;
 export type NewTask = typeof tasks.$inferInsert;
 export type InboxItem = typeof inboxItems.$inferSelect;
 export type NewInboxItem = typeof inboxItems.$inferInsert;
+export type Link = typeof links.$inferSelect;
+export type DailyNote = typeof dailyNotes.$inferSelect;
 export type GithubPr = typeof githubPrs.$inferSelect;
 export type GithubActivity = typeof githubActivity.$inferSelect;
 export type GithubEvent = typeof githubEvents.$inferSelect;

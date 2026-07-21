@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { TimelineEvent } from "@/db/schema";
+import { RelatedItems } from "@/features/links/related-items";
+import { parseTags, serializeTags } from "@/features/tags/use-tags";
 import { EVENT_CATEGORIES, useCreateEvent, useUpdateEvent } from "./use-timeline";
 
 function toDateInput(d: Date | null | undefined): string {
@@ -44,6 +46,7 @@ export function EventDialog({
   const [date, setDate] = useState("");
   const [category, setCategory] = useState("personal");
   const [notes, setNotes] = useState("");
+  const [tags, setTags] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -51,6 +54,7 @@ export function EventDialog({
     setDate(toDateInput(event?.date ?? null));
     setCategory(event?.category ?? "personal");
     setNotes(event?.notes ?? "");
+    setTags(parseTags(event?.tags).join(", "));
   }, [open, event]);
 
   const submit = async () => {
@@ -63,6 +67,7 @@ export function EventDialog({
       date: date ? new Date(date) : new Date(),
       category,
       notes: notes.trim() || null,
+      tags: serializeTags(tags),
     };
     try {
       if (isEdit && event) {
@@ -131,6 +136,16 @@ export function EventDialog({
               placeholder="Anything worth remembering..."
             />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="ev-tags">Tags</Label>
+            <Input
+              id="ev-tags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="promotion, milestone"
+            />
+          </div>
+          {isEdit && event ? <RelatedItems type="event" id={event.id} /> : null}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
