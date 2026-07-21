@@ -62,9 +62,21 @@ Rust must be on PATH — source it first: `. "$HOME/.cargo/env"`
   (macOS Keychain via the `keyring` crate, service `com.careeros.app`).
 - Accounts in use: `jira_api_token`, `github_token`.
 
+## Quick capture & local AI
+
+- **Capture:** ⌘⇧N (or ⌘K → "Capture to Inbox") drops a raw note into `inbox_items`.
+  The capture mutation lives on the always-mounted `AppActionsProvider` so AI
+  enrichment finishes even after the dialog closes.
+- **AI:** `ai_categorize` (`src-tauri/src/ai.rs`) calls a local **Ollama** model
+  (`/api/chat`, forced JSON) to classify into win/task/event/goal/feedback/
+  milestone + title, details, win size, and tags. Free & private; falls back to a
+  keyword heuristic (`src/features/ai/use-ai.ts`) when AI is off/unreachable.
+- Configure enable/endpoint/model in **Settings** (defaults: on, `http://localhost:11434`, `llama3.1`).
+- **Inbox** (`src/routes/inbox.tsx`) reviews + files each capture into the right section.
+
 ## Other notes
 
-- Migrations: currently 2 (see `src-tauri/src/lib.rs`). Increment `version` when adding more.
+- Migrations: currently 4 (see `src-tauri/src/lib.rs`). Increment `version` when adding more.
 - Plugins enabled: sql, opener, dialog, fs, notification; `protocol-asset` is on
   (tauri feature + `assetProtocol` scope `$APPLOCALDATA/**`) so vision-board images
   copied into app-local-data render via `convertFileSrc`.
