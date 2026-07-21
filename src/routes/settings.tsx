@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AiSettingsCard } from "@/features/ai/ai-settings-card";
 import { exportCalendarIcs } from "@/features/calendar/calendar";
+import { HotkeysCard } from "@/features/hotkeys/hotkeys-card";
 import { savePromoPacket, saveBackup } from "@/features/export/export";
 import { GithubSettingsCard } from "@/features/github/github-settings-card";
 import { useSyncJira } from "@/features/jira/use-jira";
@@ -211,6 +212,8 @@ export default function SettingsPage() {
         <GithubSettingsCard />
 
         <AiSettingsCard />
+
+        <HotkeysCard />
 
         <Card>
           <CardHeader>

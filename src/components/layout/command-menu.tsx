@@ -29,6 +29,8 @@ import { useSyncJira } from "@/features/jira/use-jira";
 import { useTasks } from "@/features/tasks/use-tasks";
 import { useTimelineEvents } from "@/features/timeline/use-timeline";
 import { allNav } from "@/lib/navigation";
+import { matchEvent } from "@/features/hotkeys/hotkeys";
+import { useHotkeys } from "@/features/hotkeys/use-hotkeys";
 import { useAppActions } from "./app-actions";
 
 const MAX_RESULTS = 25;
@@ -52,16 +54,17 @@ export function CommandMenu({
   const { data: events } = useTimelineEvents();
   const { data: prs } = useGithubPrs();
 
+  const paletteCombo = useHotkeys().data.commandPalette;
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (matchEvent(paletteCombo, e)) {
         e.preventDefault();
         onOpenChange(!open);
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [open, onOpenChange]);
+  }, [open, onOpenChange, paletteCombo]);
 
   const run = (fn: () => void) => {
     onOpenChange(false);

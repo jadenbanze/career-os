@@ -10,6 +10,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { db } from "@/db/client";
 import { inboxItems } from "@/db/schema";
+import { matchEvent } from "@/features/hotkeys/hotkeys";
+import { useHotkeys } from "@/features/hotkeys/use-hotkeys";
 import { BragDialog, type BragDefaults } from "@/features/brag/brag-dialog";
 import { GoalDialog } from "@/features/career/goal-dialog";
 import { enrichInbox } from "@/features/inbox/use-inbox";
@@ -78,16 +80,17 @@ export function AppActionsProvider({ children }: { children: ReactNode }) {
     [capture],
   );
 
+  const captureCombo = useHotkeys().data.quickCapture;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "n" && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+      if (matchEvent(captureCombo, e)) {
         e.preventDefault();
         setQuick(true);
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, []);
+  }, [captureCombo]);
 
   return (
     <AppActionsContext.Provider value={value}>

@@ -12,6 +12,9 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { formatCombo } from "@/features/hotkeys/hotkeys";
+import { useGlobalQuickBar } from "@/features/hotkeys/use-global-quickbar";
+import { useHotkeys } from "@/features/hotkeys/use-hotkeys";
 import { Onboarding } from "@/features/onboarding/onboarding";
 import { AutoSync } from "@/features/sync/auto-sync";
 import { UpdateAgent } from "@/features/updates/update-agent";
@@ -22,6 +25,8 @@ import { CommandMenu } from "./command-menu";
 export function RootLayout() {
   const [commandOpen, setCommandOpen] = useState(false);
   const qc = useQueryClient();
+  const hotkeys = useHotkeys().data;
+  useGlobalQuickBar(hotkeys.quickBar);
 
   // Refresh the Inbox when the global quick bar captures something.
   useEffect(() => {
@@ -49,7 +54,7 @@ export function RootLayout() {
             <Search className="size-4" />
             <span>Search or jump to...</span>
             <kbd className="bg-muted text-muted-foreground pointer-events-none ml-auto inline-flex h-5 items-center gap-1 rounded border px-1.5 text-[10px] font-medium select-none">
-              ⌘K
+              {formatCombo(hotkeys.commandPalette)}
             </kbd>
           </Button>
         </header>
