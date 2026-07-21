@@ -82,10 +82,15 @@ export function AppSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild size="lg" tooltip="Career OS">
+            <SidebarMenuButton
+              asChild
+              size="lg"
+              tooltip="Career OS"
+              className="group-data-[collapsible=icon]:justify-center"
+            >
               <Link to="/">
-                <Logo className="size-8 rounded-lg" />
-                <div className="flex flex-col gap-0.5 leading-none">
+                <Logo className="size-8! shrink-0 rounded-lg" />
+                <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
                   <span className="font-semibold">Career OS</span>
                   <span className="text-muted-foreground text-xs">
                     Your work & growth

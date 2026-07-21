@@ -1,13 +1,9 @@
 import { useEffect } from "react";
 import { Window } from "@tauri-apps/api/window";
-import {
-  isRegistered,
-  register,
-  unregister,
-} from "@tauri-apps/plugin-global-shortcut";
+import { register, unregisterAll } from "@tauri-apps/plugin-global-shortcut";
 import { toast } from "sonner";
 
-import { toAccelerator } from "./hotkeys";
+import { formatCombo, toAccelerator } from "./hotkeys";
 
 async function toggleQuickBar() {
   const win = await Window.getByLabel("quickbar");
@@ -33,19 +29,24 @@ export function useGlobalQuickBar(combo: string | undefined) {
 
     (async () => {
       try {
-        if (await isRegistered(accel)) await unregister(accel);
+        // Clear our own previous binding, then claim the combo. This is a
+        // system-wide registration, so it intercepts the keystroke globally —
+        // taking over the combo even if another app also uses it.
+        await unregisterAll();
         await register(accel, (event) => {
           if (active && event.state === "Pressed") void toggleQuickBar();
         });
       } catch (e) {
         console.error("Failed to register global shortcut", accel, e);
-        toast.error(`Couldn't register global shortcut ${accel}. It may be in use by another app.`);
+        toast.error(
+          `Couldn't bind ${formatCombo(combo)}. It may be reserved by macOS — try another combo in Settings.`,
+        );
       }
     })();
 
     return () => {
       active = false;
-      void unregister(accel).catch(() => {});
+      void unregisterAll().catch(() => {});
     };
   }, [combo]);
 }
