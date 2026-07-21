@@ -31,7 +31,9 @@ async function toggleQuickBar() {
       transparent: true,
       alwaysOnTop: true,
       center: true,
-      focus: true,
+      // Created hidden; the QuickBar reveals it once painted, so there's no
+      // white flash while the fresh webview loads.
+      visible: false,
       skipTaskbar: true,
       title: "Quick Capture",
     });

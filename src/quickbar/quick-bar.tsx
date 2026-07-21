@@ -26,7 +26,6 @@ export function QuickBar() {
   };
 
   useEffect(() => {
-    inputRef.current?.focus();
     const unlisten = win.onFocusChanged(({ payload: focused }) => {
       if (focused) {
         focusedAt.current = Date.now();
@@ -38,7 +37,21 @@ export function QuickBar() {
         void hide();
       }
     });
+    // The window is created hidden; reveal it only after the first paint so the
+    // fresh webview never flashes its default white background.
+    const raf = requestAnimationFrame(() =>
+      requestAnimationFrame(async () => {
+        try {
+          await win.show();
+          await win.setFocus();
+        } catch (e) {
+          console.error("quickbar show failed", e);
+        }
+        inputRef.current?.focus();
+      }),
+    );
     return () => {
+      cancelAnimationFrame(raf);
       void unlisten.then((f) => f());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
