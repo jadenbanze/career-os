@@ -28,6 +28,7 @@ import { AiSettingsCard } from "@/features/ai/ai-settings-card";
 import { savePromoPacket, saveBackup } from "@/features/export/export";
 import { GithubSettingsCard } from "@/features/github/github-settings-card";
 import { useSyncJira } from "@/features/jira/use-jira";
+import { AboutCard } from "@/features/updates/about-card";
 import {
   useClearJiraToken,
   useJiraConfig,
@@ -224,6 +225,8 @@ export default function SettingsPage() {
             </Button>
           </CardContent>
         </Card>
+
+        <AboutCard />
       </div>
     </Page>
   );

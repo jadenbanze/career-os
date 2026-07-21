@@ -12,6 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { AutoSync } from "@/features/sync/auto-sync";
+import { UpdateAgent } from "@/features/updates/update-agent";
 import { AppActionsProvider } from "./app-actions";
 import { AppSidebar } from "./app-sidebar";
 import { CommandMenu } from "./command-menu";
@@ -48,6 +49,7 @@ export function RootLayout() {
       </SidebarInset>
       <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} />
       <AutoSync />
+      <UpdateAgent />
     </SidebarProvider>
     </AppActionsProvider>
   );
