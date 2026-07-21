@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { MoreHorizontal, Plus, Rocket } from "lucide-react";
 import { toast } from "sonner";
 
+import { useConfirm } from "@/components/confirm";
 import { EmptyState } from "@/components/empty-state";
 import { Page, PageHeader } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ function statusLabel(value: string) {
 
 function GoalCard({ goal, onEdit }: { goal: CareerGoal; onEdit: (g: CareerGoal) => void }) {
   const del = useDeleteGoal();
+  const confirm = useConfirm();
   return (
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
@@ -59,6 +61,15 @@ function GoalCard({ goal, onEdit }: { goal: CareerGoal; onEdit: (g: CareerGoal) 
             <DropdownMenuItem
               variant="destructive"
               onSelect={async () => {
+                if (
+                  !(await confirm({
+                    title: "Delete goal?",
+                    description: `"${goal.title}" will be permanently removed.`,
+                    confirmText: "Delete",
+                    destructive: true,
+                  }))
+                )
+                  return;
                 await del.mutateAsync(goal.id);
                 toast.success("Goal deleted");
               }}

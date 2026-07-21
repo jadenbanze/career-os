@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useConfirm } from "@/components/confirm";
 import { EmptyState } from "@/components/empty-state";
 import { Page, PageHeader } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ const LINK_DEST: Record<BragLinkType, string> = {
 
 function BragCard({ entry, onEdit }: { entry: BragEntry; onEdit: (e: BragEntry) => void }) {
   const del = useDeleteBrag();
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const tags = parseTags(entry.tags);
   const links = parseLinks(entry.links);
@@ -68,6 +70,15 @@ function BragCard({ entry, onEdit }: { entry: BragEntry; onEdit: (e: BragEntry) 
             <DropdownMenuItem
               variant="destructive"
               onSelect={async () => {
+                if (
+                  !(await confirm({
+                    title: "Delete win?",
+                    description: `"${entry.title}" will be permanently removed.`,
+                    confirmText: "Delete",
+                    destructive: true,
+                  }))
+                )
+                  return;
                 await del.mutateAsync(entry.id);
                 toast.success("Win deleted");
               }}

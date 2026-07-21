@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { CalendarClock, MoreHorizontal, Plus } from "lucide-react";
 import { toast } from "sonner";
 
+import { useConfirm } from "@/components/confirm";
 import { EmptyState } from "@/components/empty-state";
 import { Page, PageHeader } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ function groupByYear(events: TimelineEvent[]): [string, TimelineEvent[]][] {
 export default function TimelinePage() {
   const { data: events, isLoading } = useTimelineEvents();
   const del = useDeleteEvent();
+  const confirm = useConfirm();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<TimelineEvent | null>(null);
 
@@ -151,6 +153,15 @@ export default function TimelinePage() {
                           <DropdownMenuItem
                             variant="destructive"
                             onSelect={async () => {
+                              if (
+                                !(await confirm({
+                                  title: "Delete event?",
+                                  description: `"${e.title}" will be permanently removed.`,
+                                  confirmText: "Delete",
+                                  destructive: true,
+                                }))
+                              )
+                                return;
                               await del.mutateAsync(e.id);
                               toast.success("Event deleted");
                             }}

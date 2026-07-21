@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Award, MessageSquare, MoreHorizontal, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
 
+import { useConfirm } from "@/components/confirm";
 import { EmptyState } from "@/components/empty-state";
 import { Page, PageHeader } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ const KIND_TONE: Record<string, string> = {
 function OneOnOnesTab() {
   const { data: notes } = useOneOnOnes();
   const del = useDeleteOneOnOne();
+  const confirm = useConfirm();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OneOnOne | null>(null);
 
@@ -89,6 +91,15 @@ function OneOnOnesTab() {
                     <DropdownMenuItem
                       variant="destructive"
                       onSelect={async () => {
+                        if (
+                          !(await confirm({
+                            title: "Delete 1:1 note?",
+                            description: "This note will be permanently removed.",
+                            confirmText: "Delete",
+                            destructive: true,
+                          }))
+                        )
+                          return;
                         await del.mutateAsync(n.id);
                         toast.success("Note deleted");
                       }}
@@ -117,6 +128,7 @@ function OneOnOnesTab() {
 function FeedbackTab() {
   const { data: entries } = useFeedback();
   const del = useDeleteFeedback();
+  const confirm = useConfirm();
   const createBrag = useCreateBrag();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Feedback | null>(null);
@@ -186,6 +198,15 @@ function FeedbackTab() {
                     <DropdownMenuItem
                       variant="destructive"
                       onSelect={async () => {
+                        if (
+                          !(await confirm({
+                            title: "Delete feedback?",
+                            description: "This feedback will be permanently removed.",
+                            confirmText: "Delete",
+                            destructive: true,
+                          }))
+                        )
+                          return;
                         await del.mutateAsync(f.id);
                         toast.success("Feedback deleted");
                       }}

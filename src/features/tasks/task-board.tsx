@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/db/schema";
+import { useConfirm } from "@/components/confirm";
 import { useAppActions } from "@/components/layout/app-actions";
 import { JiraKeyBadge } from "@/features/jira/jira-key-badge";
 import { PRIORITY_BADGE, TASK_STATUSES, type TaskPriority } from "./constants";
@@ -40,6 +41,7 @@ function TaskCard({
   overlay?: boolean;
 }) {
   const del = useDeleteTask();
+  const confirm = useConfirm();
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: task.id, disabled: overlay });
 
@@ -91,6 +93,15 @@ function TaskCard({
             <DropdownMenuItem
               variant="destructive"
               onSelect={async () => {
+                if (
+                  !(await confirm({
+                    title: "Delete task?",
+                    description: `"${task.title}" will be permanently removed.`,
+                    confirmText: "Delete",
+                    destructive: true,
+                  }))
+                )
+                  return;
                 await del.mutateAsync(task.id);
                 toast.success("Task deleted");
               }}

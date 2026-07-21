@@ -17,6 +17,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, MoreHorizontal, Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
+import { useConfirm } from "@/components/confirm";
 import { EmptyState } from "@/components/empty-state";
 import { Page, PageHeader } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,7 @@ function SortableCard({
   onEdit: (item: VisionItem) => void;
 }) {
   const del = useDeleteVisionItem();
+  const confirm = useConfirm();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id });
 
@@ -94,6 +96,15 @@ function SortableCard({
               <DropdownMenuItem
                 variant="destructive"
                 onSelect={async () => {
+                  if (
+                    !(await confirm({
+                      title: "Delete card?",
+                      description: `"${item.title}" will be permanently removed.`,
+                      confirmText: "Delete",
+                      destructive: true,
+                    }))
+                  )
+                    return;
                   await del.mutateAsync(item.id);
                   toast.success("Card deleted");
                 }}
