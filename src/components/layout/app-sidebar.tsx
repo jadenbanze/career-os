@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { GraduationCap } from "lucide-react";
+
+import { Logo } from "@/components/logo";
 
 import {
   Sidebar,
@@ -69,9 +70,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="lg" tooltip="Career OS">
               <Link to="/">
-                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <GraduationCap className="size-4" />
-                </div>
+                <Logo className="size-8 rounded-lg" />
                 <div className="flex flex-col gap-0.5 leading-none">
                   <span className="font-semibold">Career OS</span>
                   <span className="text-muted-foreground text-xs">
