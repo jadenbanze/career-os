@@ -23,7 +23,7 @@ async function toggleQuickBar() {
       return;
     }
     const win = new WebviewWindow("quickbar", {
-      url: "index.html",
+      url: "quickbar.html",
       width: 640,
       height: 380,
       resizable: false,
@@ -31,9 +31,7 @@ async function toggleQuickBar() {
       transparent: true,
       alwaysOnTop: true,
       center: true,
-      // Created hidden; the QuickBar reveals it once painted, so there's no
-      // white flash while the fresh webview loads.
-      visible: false,
+      focus: true,
       skipTaskbar: true,
       title: "Quick Capture",
     });

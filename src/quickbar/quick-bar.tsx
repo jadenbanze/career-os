@@ -26,32 +26,20 @@ export function QuickBar() {
   };
 
   useEffect(() => {
+    // The window is created visible + focused, so just grab the input.
+    focusedAt.current = Date.now();
+    inputRef.current?.focus();
     const unlisten = win.onFocusChanged(({ payload: focused }) => {
       if (focused) {
         focusedAt.current = Date.now();
-        // Re-focus the input each time the bar is summoned.
         setTimeout(() => inputRef.current?.focus(), 20);
       } else if (Date.now() - focusedAt.current > 350) {
-        // Raycast-style dismiss on blur — but ignore the focus-transition
-        // blip right as the window is being summoned, or it vanishes instantly.
+        // Raycast-style dismiss on blur — but ignore the focus-transition blip
+        // right as the window is summoned, or it would vanish instantly.
         void hide();
       }
     });
-    // The window is created hidden; reveal it only after the first paint so the
-    // fresh webview never flashes its default white background.
-    const raf = requestAnimationFrame(() =>
-      requestAnimationFrame(async () => {
-        try {
-          await win.show();
-          await win.setFocus();
-        } catch (e) {
-          console.error("quickbar show failed", e);
-        }
-        inputRef.current?.focus();
-      }),
-    );
     return () => {
-      cancelAnimationFrame(raf);
       void unlisten.then((f) => f());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

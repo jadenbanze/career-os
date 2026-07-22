@@ -19,6 +19,10 @@ export default defineConfig(async () => ({
   build: {
     chunkSizeWarningLimit: 1200,
     rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL("./index.html", import.meta.url)),
+        quickbar: fileURLToPath(new URL("./quickbar.html", import.meta.url)),
+      },
       output: {
         // Split large, stable vendors into their own cacheable chunks.
         manualChunks: {

@@ -1,15 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
+  DragDropContext,
+  Draggable,
+  Droppable,
+  type DraggableProvided,
+  type DraggableStateSnapshot,
+  type DropResult,
+} from "@hello-pangea/dnd";
 import { format } from "date-fns";
 import { CalendarDays, GripVertical, MoreHorizontal, Plus, User } from "lucide-react";
 import { toast } from "sonner";
@@ -39,44 +36,39 @@ import { useDeleteTask, useUpdateTask } from "./use-tasks";
 function TaskCard({
   task,
   onEdit,
-  overlay,
+  provided,
+  snapshot,
 }: {
   task: Task;
-  onEdit?: (task: Task) => void;
-  overlay?: boolean;
+  onEdit: (task: Task) => void;
+  provided: DraggableProvided;
+  snapshot: DraggableStateSnapshot;
 }) {
   const del = useDeleteTask();
   const confirm = useConfirm();
-  // No transform on the original: the DragOverlay renders the moving copy.
-  // Applying both caused a double-image jitter while dragging.
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: task.id,
-    disabled: overlay,
-  });
-
   return (
     <div
-      ref={setNodeRef}
+      ref={provided.innerRef}
+      {...provided.draggableProps}
+      {...provided.dragHandleProps}
+      style={{
+        ...provided.draggableProps.style,
+        // Clear the leftover transform once dropped, so cards don't drift/jitter.
+        transform: snapshot.isDragging
+          ? provided.draggableProps.style?.transform
+          : "none",
+      }}
       className={cn(
         "bg-card group rounded-lg border border-l-2 p-3 shadow-xs",
         PRIORITY_ACCENT[task.priority as TaskPriority],
-        !overlay && isDragging && "opacity-30",
-        overlay && "cursor-grabbing shadow-xl",
+        snapshot.isDragging && "shadow-xl",
       )}
     >
       <div className="flex items-start gap-1.5">
+        <GripVertical className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
         <button
           type="button"
-          className="text-muted-foreground/50 hover:text-muted-foreground mt-0.5 cursor-grab touch-none active:cursor-grabbing"
-          {...listeners}
-          {...attributes}
-          aria-label="Drag task"
-        >
-          <GripVertical className="size-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => onEdit?.(task)}
+          onClick={() => onEdit(task)}
           className="flex-1 text-left text-sm font-medium hover:underline"
         >
           {task.title}
@@ -92,9 +84,7 @@ function TaskCard({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => onEdit?.(task)}>
-              Edit
-            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onEdit(task)}>Edit</DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
               onSelect={async () => {
@@ -126,7 +116,7 @@ function TaskCard({
       <div className="mt-2 flex flex-wrap items-center gap-1.5 pl-6">
         <Badge
           variant="secondary"
-          className={cn("border-0", PRIORITY_BADGE[task.priority as TaskPriority])}
+          className={cn("border-0 capitalize", PRIORITY_BADGE[task.priority as TaskPriority])}
         >
           {task.priority}
         </Badge>
@@ -161,7 +151,6 @@ function Column({
   onEdit: (task: Task) => void;
   onAdd: (status: string) => void;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: status });
   return (
     <div className="flex min-w-0 flex-col">
       <div className="mb-2 flex items-center justify-between px-1">
@@ -179,22 +168,37 @@ function Column({
           <Plus className="size-4" />
         </Button>
       </div>
-      <div
-        ref={setNodeRef}
-        className={cn(
-          "bg-muted/40 flex flex-1 flex-col gap-2 rounded-lg p-2 transition-colors",
-          isOver && "bg-muted ring-primary/30 ring-2",
-        )}
-      >
-        {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} onEdit={onEdit} />
-        ))}
-        {tasks.length === 0 ? (
-          <div className="text-muted-foreground/60 flex h-16 items-center justify-center text-xs">
-            Drop tasks here
+      <Droppable droppableId={status}>
+        {(dropProvided, dropSnapshot) => (
+          <div
+            ref={dropProvided.innerRef}
+            {...dropProvided.droppableProps}
+            className={cn(
+              "bg-muted/40 flex flex-1 flex-col gap-2 rounded-lg p-2 transition-colors",
+              dropSnapshot.isDraggingOver && "bg-muted ring-primary/30 ring-2",
+            )}
+          >
+            {tasks.map((task, index) => (
+              <Draggable key={task.id} draggableId={task.id} index={index}>
+                {(provided, snapshot) => (
+                  <TaskCard
+                    task={task}
+                    onEdit={onEdit}
+                    provided={provided}
+                    snapshot={snapshot}
+                  />
+                )}
+              </Draggable>
+            ))}
+            {dropProvided.placeholder}
+            {tasks.length === 0 && !dropSnapshot.isDraggingOver ? (
+              <div className="text-muted-foreground/60 flex h-16 items-center justify-center text-xs">
+                Drop tasks here
+              </div>
+            ) : null}
           </div>
-        ) : null}
-      </div>
+        )}
+      </Droppable>
     </div>
   );
 }
@@ -210,10 +214,6 @@ export function TaskBoard({
 }) {
   const update = useUpdateTask();
   const actions = useAppActions();
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-  );
 
   const byStatus = useMemo(() => {
     const map: Record<string, Task[]> = {};
@@ -222,28 +222,18 @@ export function TaskBoard({
     return map;
   }, [tasks]);
 
-  const activeTask = activeId ? tasks.find((t) => t.id === activeId) : null;
-
-  const onDragStart = (e: DragStartEvent) => setActiveId(String(e.active.id));
-  const onDragEnd = (e: DragEndEvent) => {
-    setActiveId(null);
-    const { active, over } = e;
-    if (!over) return;
-    const task = tasks.find((t) => t.id === String(active.id));
-    const newStatus = String(over.id);
-    if (task && task.status !== newStatus) {
-      update.mutate({ id: task.id, status: newStatus });
-      if (newStatus === "done") suggestWin(task, actions.openBrag);
-    }
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination, draggableId } = result;
+    if (!destination || destination.droppableId === source.droppableId) return;
+    const task = tasks.find((t) => t.id === draggableId);
+    if (!task) return;
+    const newStatus = destination.droppableId;
+    update.mutate({ id: task.id, status: newStatus });
+    if (newStatus === "done") suggestWin(task, actions.openBrag);
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onDragCancel={() => setActiveId(null)}
-    >
+    <DragDropContext onDragEnd={onDragEnd}>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {TASK_STATUSES.map((s) => (
           <Column
@@ -256,9 +246,6 @@ export function TaskBoard({
           />
         ))}
       </div>
-      <DragOverlay>
-        {activeTask ? <TaskCard task={activeTask} overlay /> : null}
-      </DragOverlay>
-    </DndContext>
+    </DragDropContext>
   );
 }
