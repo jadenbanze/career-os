@@ -59,7 +59,7 @@ const STEPS: Step[] = [
     icon: TrendingUp,
     tone: "bg-emerald-500/15 text-emerald-500",
     title: "Build your promotion case",
-    body: "Log wins to your Brag Sheet, track goals and milestones in Growth, then export a polished promo packet when review season comes.",
+    body: "Log wins, track goals and milestones in Journey, then export a polished promo packet when review season comes.",
   },
   {
     icon: PlugZap,

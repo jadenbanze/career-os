@@ -215,7 +215,7 @@ export default function DashboardPage() {
           <CardContent>
             {ms.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                Add milestones on the Growth page to track your path.
+                Add milestones on the Journey page to track your path.
               </p>
             ) : (
               <div className="space-y-2">
@@ -243,7 +243,7 @@ export default function DashboardPage() {
           <CardContent>
             {recentWins.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                No wins logged yet — add one in Growth → Wins.
+                No wins logged yet — add one in Journey → Wins.
               </p>
             ) : (
               <ul className="space-y-3">

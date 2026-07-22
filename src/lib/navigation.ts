@@ -27,7 +27,7 @@ export const primaryNav: NavItem[] = [
 ];
 
 export const growthNav: NavItem[] = [
-  { title: "Growth", url: "/growth", icon: Rocket, description: "Wins, goals & promotion" },
+  { title: "Journey", url: "/growth", icon: Rocket, description: "Wins, goals & promotion" },
   { title: "Feedback", url: "/feedback", icon: MessageSquare, description: "1:1s & feedback" },
   { title: "Timeline", url: "/timeline", icon: CalendarClock, description: "Important dates" },
   { title: "Tags", url: "/tags", icon: Tags, description: "Browse by theme" },

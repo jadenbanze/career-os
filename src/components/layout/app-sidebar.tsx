@@ -109,7 +109,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mt-3 border-t border-sidebar-border/60 pt-3">
-          <SidebarGroupLabel>Growth</SidebarGroupLabel>
+          <SidebarGroupLabel>Journey</SidebarGroupLabel>
           <SidebarGroupContent>
             <NavMenu items={growthNav} />
           </SidebarGroupContent>

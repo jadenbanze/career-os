@@ -354,7 +354,7 @@ export default function GrowthPage() {
   return (
     <Page>
       <PageHeader
-        title="Growth"
+        title="Journey"
         description="Your wins, development goals, and path to the next level."
         icon={Rocket}
       />
