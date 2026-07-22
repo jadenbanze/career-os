@@ -1,5 +1,5 @@
 import { Suspense, type ReactNode } from "react";
-import { createHashRouter } from "react-router-dom";
+import { createHashRouter, Navigate } from "react-router-dom";
 
 import { RootLayout } from "@/components/layout/root-layout";
 import { RouteFallback } from "@/components/route-fallback";
@@ -18,7 +18,7 @@ export const router = createHashRouter([
       { path: "inbox", element: <Pages.Inbox /> },
       { path: "tasks", element: <Pages.Tasks /> },
       { path: "activity", element: <Pages.Activity /> },
-      { path: "brag", element: <Pages.Brag /> },
+      { path: "brag", element: <Navigate to="/growth?tab=wins" replace /> },
       { path: "growth", element: <Pages.Growth /> },
       { path: "feedback", element: <Pages.Feedback /> },
       { path: "timeline", element: <Pages.Timeline /> },

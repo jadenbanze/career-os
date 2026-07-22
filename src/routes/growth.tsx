@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
 import {
   CheckCircle2,
@@ -26,6 +27,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CareerGoal, PromotionMilestone } from "@/db/schema";
+import { useBragEntries } from "@/features/brag/use-brag";
+import { WinsPanel } from "@/features/brag/wins-panel";
 import { GoalDialog } from "@/features/career/goal-dialog";
 import { GOAL_STATUSES, useCareerGoals, useDeleteGoal } from "@/features/career/use-career";
 import { MilestoneDialog } from "@/features/promotion/milestone-dialog";
@@ -334,19 +337,45 @@ function PromotionPanel() {
 
 /* ----------------------------- Page ------------------------------ */
 
+function TabCount({ n }: { n?: number }) {
+  if (!n) return null;
+  return (
+    <span className="text-muted-foreground ml-1.5 text-xs tabular-nums">{n}</span>
+  );
+}
+
 export default function GrowthPage() {
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") ?? "wins";
+  const { data: wins } = useBragEntries();
+  const { data: goals } = useCareerGoals();
+  const { data: milestones } = usePromotionMilestones();
+
   return (
     <Page>
       <PageHeader
         title="Growth"
-        description="Your development goals and path to the next level."
+        description="Your wins, development goals, and path to the next level."
         icon={Rocket}
       />
-      <Tabs defaultValue="goals">
+      <Tabs value={tab} onValueChange={(v) => setParams({ tab: v }, { replace: true })}>
         <TabsList>
-          <TabsTrigger value="goals">Goals</TabsTrigger>
-          <TabsTrigger value="promotion">Promotion</TabsTrigger>
+          <TabsTrigger value="wins">
+            Wins
+            <TabCount n={wins?.length} />
+          </TabsTrigger>
+          <TabsTrigger value="goals">
+            Goals
+            <TabCount n={goals?.length} />
+          </TabsTrigger>
+          <TabsTrigger value="promotion">
+            Promotion
+            <TabCount n={milestones?.length} />
+          </TabsTrigger>
         </TabsList>
+        <TabsContent value="wins" className="mt-4">
+          <WinsPanel />
+        </TabsContent>
         <TabsContent value="goals" className="mt-4">
           <GoalsPanel />
         </TabsContent>

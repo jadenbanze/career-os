@@ -36,7 +36,6 @@ const NAV_ICON_COLOR: Record<string, string> = {
   "/inbox": "text-amber-500",
   "/tasks": "text-blue-500",
   "/activity": "text-violet-500",
-  "/brag": "text-yellow-500",
   "/growth": "text-emerald-500",
   "/feedback": "text-pink-500",
   "/timeline": "text-orange-500",
@@ -109,7 +108,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
+        <SidebarGroup className="mt-3 border-t border-sidebar-border/60 pt-3">
           <SidebarGroupLabel>Growth</SidebarGroupLabel>
           <SidebarGroupContent>
             <NavMenu items={growthNav} />

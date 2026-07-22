@@ -43,9 +43,9 @@ export const TAGGED_LABEL: Record<TaggedType, string> = {
 };
 
 export const TAGGED_ROUTE: Record<TaggedType, string> = {
-  brag: "/brag",
-  goal: "/growth",
-  milestone: "/growth",
+  brag: "/growth?tab=wins",
+  goal: "/growth?tab=goals",
+  milestone: "/growth?tab=promotion",
   event: "/timeline",
 };
 

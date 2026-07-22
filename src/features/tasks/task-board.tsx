@@ -47,22 +47,21 @@ function TaskCard({
 }) {
   const del = useDeleteTask();
   const confirm = useConfirm();
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: task.id, disabled: overlay });
-
-  const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined;
+  // No transform on the original: the DragOverlay renders the moving copy.
+  // Applying both caused a double-image jitter while dragging.
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: task.id,
+    disabled: overlay,
+  });
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
       className={cn(
         "bg-card group rounded-lg border border-l-2 p-3 shadow-xs",
         PRIORITY_ACCENT[task.priority as TaskPriority],
-        isDragging && "opacity-40",
-        overlay && "shadow-lg",
+        !overlay && isDragging && "opacity-30",
+        overlay && "cursor-grabbing shadow-xl",
       )}
     >
       <div className="flex items-start gap-1.5">

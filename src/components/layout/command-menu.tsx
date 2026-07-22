@@ -165,7 +165,7 @@ export function CommandMenu({
             {brag && brag.length > 0 ? (
               <CommandGroup heading="Wins">
                 {brag.slice(0, MAX_RESULTS).map((b) => (
-                  <CommandItem key={b.id} value={`win ${b.title}`} onSelect={() => go("/brag")}>
+                  <CommandItem key={b.id} value={`win ${b.title}`} onSelect={() => go("/growth?tab=wins")}>
                     <Award />
                     <span className="truncate">{b.title}</span>
                   </CommandItem>

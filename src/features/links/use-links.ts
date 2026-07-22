@@ -38,9 +38,9 @@ export const ENTITY_LABEL: Record<EntityType, string> = {
 /** Route each entity type lives on, for click-through navigation. */
 export const ENTITY_ROUTE: Record<EntityType, string> = {
   task: "/tasks",
-  brag: "/brag",
-  goal: "/growth",
-  milestone: "/growth",
+  brag: "/growth?tab=wins",
+  goal: "/growth?tab=goals",
+  milestone: "/growth?tab=promotion",
   event: "/timeline",
   feedback: "/feedback",
   oneonone: "/feedback",

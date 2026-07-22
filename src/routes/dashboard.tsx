@@ -133,7 +133,7 @@ export default function DashboardPage() {
           label="Wins logged"
           value={(brag ?? []).length}
           icon={Award}
-          to="/brag"
+          to="/growth?tab=wins"
           tone="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
         />
       </div>
@@ -243,7 +243,7 @@ export default function DashboardPage() {
           <CardContent>
             {recentWins.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                No wins logged yet — capture one on the Brag Sheet.
+                No wins logged yet — add one in Growth → Wins.
               </p>
             ) : (
               <ul className="space-y-3">

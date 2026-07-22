@@ -1,6 +1,5 @@
 import {
   Activity,
-  Award,
   CalendarClock,
   Inbox,
   LayoutDashboard,
@@ -28,8 +27,7 @@ export const primaryNav: NavItem[] = [
 ];
 
 export const growthNav: NavItem[] = [
-  { title: "Brag Sheet", url: "/brag", icon: Award, description: "Log your wins" },
-  { title: "Growth", url: "/growth", icon: Rocket, description: "Goals & promotion path" },
+  { title: "Growth", url: "/growth", icon: Rocket, description: "Wins, goals & promotion" },
   { title: "Feedback", url: "/feedback", icon: MessageSquare, description: "1:1s & feedback" },
   { title: "Timeline", url: "/timeline", icon: CalendarClock, description: "Important dates" },
   { title: "Tags", url: "/tags", icon: Tags, description: "Browse by theme" },

@@ -1,20 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import {
-  Award,
-  Link2,
-  ListTodo,
-  MoreHorizontal,
-  Plus,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
+import { Award, Link2, ListTodo, MoreHorizontal, Plus, Sparkles, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 
 import { useConfirm } from "@/components/confirm";
 import { EmptyState } from "@/components/empty-state";
-import { Page, PageHeader } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -39,7 +30,7 @@ const LINK_ICON = {
 const LINK_DEST: Record<BragLinkType, string> = {
   task: "/tasks",
   jira: "/tasks",
-  milestone: "/growth",
+  milestone: "/growth?tab=promotion",
 };
 
 function BragCard({ entry, onEdit }: { entry: BragEntry; onEdit: (e: BragEntry) => void }) {
@@ -52,9 +43,7 @@ function BragCard({ entry, onEdit }: { entry: BragEntry; onEdit: (e: BragEntry) 
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h3 className="font-medium">{entry.title}</h3>
-          </div>
+          <h3 className="font-medium">{entry.title}</h3>
           <p className="text-muted-foreground text-xs">
             {format(new Date(entry.date), "MMMM d, yyyy")}
           </p>
@@ -128,7 +117,7 @@ function BragCard({ entry, onEdit }: { entry: BragEntry; onEdit: (e: BragEntry) 
   );
 }
 
-export default function BragSheetPage() {
+export function WinsPanel() {
   const { data: entries, isLoading } = useBragEntries();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<BragEntry | null>(null);
@@ -143,19 +132,13 @@ export default function BragSheetPage() {
   };
 
   return (
-    <Page>
-      <PageHeader
-        title="Brag Sheet"
-        description="Capture your wins while they're fresh — future-you will thank you at review time."
-        icon={Award}
-        actions={
-          <Button onClick={openNew}>
-            <Plus className="size-4" />
-            Log a win
-          </Button>
-        }
-      />
-
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button onClick={openNew}>
+          <Plus className="size-4" />
+          Log a win
+        </Button>
+      </div>
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -181,8 +164,7 @@ export default function BragSheetPage() {
           ))}
         </div>
       )}
-
       <BragDialog open={dialogOpen} onOpenChange={setDialogOpen} entry={editing} />
-    </Page>
+    </div>
   );
 }
