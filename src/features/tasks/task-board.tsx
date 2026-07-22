@@ -59,9 +59,9 @@ function TaskCard({
           : "none",
       }}
       className={cn(
-        "bg-card group rounded-lg border border-l-2 p-3 shadow-xs",
+        "bg-card group cursor-grab rounded-lg border border-l-2 p-3 shadow-xs active:cursor-grabbing",
         PRIORITY_ACCENT[task.priority as TaskPriority],
-        snapshot.isDragging && "shadow-xl",
+        snapshot.isDragging && "cursor-grabbing shadow-xl",
       )}
     >
       <div className="flex items-start gap-1.5">
@@ -174,10 +174,16 @@ function Column({
             ref={dropProvided.innerRef}
             {...dropProvided.droppableProps}
             className={cn(
-              "bg-muted/40 flex flex-1 flex-col gap-2 rounded-lg p-2 transition-colors",
+              "bg-muted/40 relative flex min-h-24 flex-col gap-2 rounded-lg p-2 transition-colors",
               dropSnapshot.isDraggingOver && "bg-muted ring-primary/30 ring-2",
             )}
           >
+            {/* Absolutely positioned so it never shifts the column size. */}
+            {tasks.length === 0 ? (
+              <div className="text-muted-foreground/50 pointer-events-none absolute inset-0 flex items-center justify-center text-xs">
+                Drop tasks here
+              </div>
+            ) : null}
             {tasks.map((task, index) => (
               <Draggable key={task.id} draggableId={task.id} index={index}>
                 {(provided, snapshot) => (
@@ -191,11 +197,6 @@ function Column({
               </Draggable>
             ))}
             {dropProvided.placeholder}
-            {tasks.length === 0 && !dropSnapshot.isDraggingOver ? (
-              <div className="text-muted-foreground/60 flex h-16 items-center justify-center text-xs">
-                Drop tasks here
-              </div>
-            ) : null}
           </div>
         )}
       </Droppable>
