@@ -54,6 +54,34 @@ export function useUpdateTask() {
   });
 }
 
+export type TaskMoveUpdate = Pick<Task, "id" | "status" | "position">;
+
+/** Persists a synchronously-applied board move without a one-frame snap-back. */
+export function useMoveTasks() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ updates }: { updates: TaskMoveUpdate[]; nextTasks: Task[] }) => {
+      const updatedAt = new Date();
+      for (const task of updates) {
+        await db
+          .update(tasks)
+          .set({ status: task.status, position: task.position, updatedAt })
+          .where(eq(tasks.id, task.id));
+      }
+    },
+    onMutate: ({ nextTasks }) => {
+      const prev = qc.getQueryData<Task[]>(KEY);
+      void qc.cancelQueries({ queryKey: KEY });
+      qc.setQueryData<Task[]>(KEY, nextTasks);
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(KEY, ctx.prev);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
 export function useDeleteTask() {
   const qc = useQueryClient();
   return useMutation({

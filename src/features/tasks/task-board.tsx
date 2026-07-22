@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import {
   DragDropContext,
   Draggable,
@@ -31,7 +32,7 @@ import {
   type TaskPriority,
 } from "./constants";
 import { suggestWin } from "./suggest-win";
-import { useDeleteTask, useUpdateTask } from "./use-tasks";
+import { useDeleteTask, useMoveTasks } from "./use-tasks";
 
 function TaskCard({
   task,
@@ -50,7 +51,6 @@ function TaskCard({
     <div
       ref={provided.innerRef}
       {...provided.draggableProps}
-      {...provided.dragHandleProps}
       style={{
         ...provided.draggableProps.style,
         // Clear the leftover transform once dropped, so cards don't drift/jitter.
@@ -59,13 +59,21 @@ function TaskCard({
           : "none",
       }}
       className={cn(
-        "bg-card group cursor-grab rounded-lg border border-l-2 p-3 shadow-xs active:cursor-grabbing",
+        "bg-card group rounded-lg border border-l-2 p-3 shadow-xs",
         PRIORITY_ACCENT[task.priority as TaskPriority],
-        snapshot.isDragging && "cursor-grabbing shadow-xl",
+        snapshot.isDragging && "shadow-xl",
       )}
     >
       <div className="flex items-start gap-1.5">
-        <GripVertical className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
+        <span
+          {...(provided.dragHandleProps ?? {})}
+          className={cn(
+            "text-muted-foreground/40 hover:text-muted-foreground mt-0.5 cursor-grab touch-none",
+            snapshot.isDragging && "cursor-grabbing",
+          )}
+        >
+          <GripVertical className="size-4 shrink-0" />
+        </span>
         <button
           type="button"
           onClick={() => onEdit(task)}
@@ -174,13 +182,21 @@ function Column({
             ref={dropProvided.innerRef}
             {...dropProvided.droppableProps}
             className={cn(
-              "bg-muted/40 relative flex min-h-24 flex-col gap-2 rounded-lg p-2 transition-colors",
+              // Use sibling spacing, not flex gap: the DnD placeholder measures
+              // draggable margins but not CSS gap, which caused a small source
+              // column size twitch. min-h-32 keeps a one-card column stable.
+              "bg-muted/40 relative min-h-32 space-y-2 rounded-lg p-2 transition-colors",
               dropSnapshot.isDraggingOver && "bg-muted ring-primary/30 ring-2",
             )}
           >
             {/* Absolutely positioned so it never shifts the column size. */}
             {tasks.length === 0 ? (
-              <div className="text-muted-foreground/50 pointer-events-none absolute inset-0 flex items-center justify-center text-xs">
+              <div
+                className={cn(
+                  "text-muted-foreground/50 pointer-events-none absolute inset-0 flex items-center justify-center text-xs transition-opacity",
+                  dropSnapshot.isDraggingOver && "opacity-0",
+                )}
+              >
                 Drop tasks here
               </div>
             ) : null}
@@ -213,28 +229,104 @@ export function TaskBoard({
   onEdit: (task: Task) => void;
   onAdd: (status: string) => void;
 }) {
-  const update = useUpdateTask();
+  const move = useMoveTasks();
   const actions = useAppActions();
+  const [boardTasks, setBoardTasks] = useState(tasks);
+  const dragging = useRef(false);
+  const pendingTasks = useRef<Task[] | null>(null);
+
+  // Avoid changing the measured list under the DnD engine mid-drag. If a query
+  // refresh lands while dragging, apply it after cancel/drop instead.
+  useEffect(() => {
+    if (dragging.current) pendingTasks.current = tasks;
+    else setBoardTasks(tasks);
+  }, [tasks]);
 
   const byStatus = useMemo(() => {
     const map: Record<string, Task[]> = {};
     for (const s of TASK_STATUSES) map[s.value] = [];
-    for (const t of tasks) (map[t.status] ??= []).push(t);
+    for (const t of boardTasks) (map[t.status] ??= []).push(t);
     return map;
-  }, [tasks]);
+  }, [boardTasks]);
 
   const onDragEnd = (result: DropResult) => {
+    dragging.current = false;
     const { source, destination, draggableId } = result;
-    if (!destination || destination.droppableId === source.droppableId) return;
-    const task = tasks.find((t) => t.id === draggableId);
-    if (!task) return;
-    const newStatus = destination.droppableId;
-    update.mutate({ id: task.id, status: newStatus });
-    if (newStatus === "done") suggestWin(task, actions.openBrag);
+    if (!destination) {
+      if (pendingTasks.current) setBoardTasks(pendingTasks.current);
+      pendingTasks.current = null;
+      return;
+    }
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
+      if (pendingTasks.current) setBoardTasks(pendingTasks.current);
+      pendingTasks.current = null;
+      return;
+    }
+
+    const previous = boardTasks;
+    const lists: Record<string, Task[]> = {};
+    for (const s of TASK_STATUSES) lists[s.value] = [];
+    for (const task of previous) (lists[task.status] ??= []).push(task);
+
+    const sourceList = [...(lists[source.droppableId] ?? [])];
+    const [dragged] = sourceList.splice(source.index, 1);
+    if (!dragged || dragged.id !== draggableId) {
+      if (pendingTasks.current) setBoardTasks(pendingTasks.current);
+      pendingTasks.current = null;
+      return;
+    }
+
+    if (source.droppableId === destination.droppableId) {
+      sourceList.splice(destination.index, 0, dragged);
+      lists[source.droppableId] = sourceList;
+    } else {
+      const destinationList = [...(lists[destination.droppableId] ?? [])];
+      destinationList.splice(destination.index, 0, {
+        ...dragged,
+        status: destination.droppableId,
+      });
+      lists[source.droppableId] = sourceList;
+      lists[destination.droppableId] = destinationList;
+    }
+
+    const nextTasks = TASK_STATUSES.flatMap((status) =>
+      (lists[status.value] ?? []).map((task, position) =>
+        task.position === position ? task : { ...task, position },
+      ),
+    );
+    const previousById = new Map(previous.map((task) => [task.id, task]));
+    const updates = nextTasks
+      .filter((task) => {
+        const old = previousById.get(task.id);
+        return old && (old.status !== task.status || old.position !== task.position);
+      })
+      .map(({ id, status, position }) => ({ id, status, position }));
+
+    // @hello-pangea/dnd requires this reorder synchronously inside onDragEnd.
+    // Without flushSync the item briefly snaps back to the source before the
+    // React Query optimistic mutation arrives on the next microtask.
+    pendingTasks.current = null;
+    flushSync(() => setBoardTasks(nextTasks));
+    move.mutate(
+      { updates, nextTasks },
+      { onError: () => setBoardTasks(previous) },
+    );
+
+    if (dragged.status !== "done" && destination.droppableId === "done") {
+      suggestWin(dragged, actions.openBrag);
+    }
   };
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
+    <DragDropContext
+      onDragStart={() => {
+        dragging.current = true;
+      }}
+      onDragEnd={onDragEnd}
+    >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {TASK_STATUSES.map((s) => (
           <Column
