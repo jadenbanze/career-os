@@ -26,8 +26,12 @@ import { CommandMenu } from "./command-menu";
 export function RootLayout() {
   const [commandOpen, setCommandOpen] = useState(false);
   const qc = useQueryClient();
-  const hotkeys = useHotkeys().data;
-  useGlobalQuickBar(hotkeys.quickBar);
+  const hotkeyQuery = useHotkeys();
+  const hotkeys = hotkeyQuery.data;
+  // Do not bind display-only defaults while persisted settings are loading.
+  useGlobalQuickBar(
+    hotkeyQuery.isPlaceholderData ? undefined : hotkeys.quickBar,
+  );
 
   // The global quick bar captures then closes; the main window enriches the
   // new item (AI) and refreshes the Inbox.

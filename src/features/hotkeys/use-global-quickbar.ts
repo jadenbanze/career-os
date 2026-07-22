@@ -9,6 +9,7 @@ import { formatCombo, toAccelerator } from "./hotkeys";
 // macOS System Settings → Keyboard shortcuts (harmless no-op on other OSes).
 const KEYBOARD_SETTINGS_URL =
   "x-apple.systempreferences:com.apple.Keyboard-Settings.extension";
+const BIND_TOAST_ID = "global-quickbar-binding";
 
 /**
  * Summon or dismiss the quick bar. It's created fresh each time and closed on
@@ -43,9 +44,11 @@ async function toggleQuickBar() {
   }
 }
 
-// Only announce (re)registration after the initial silent bind at launch, so
-// the user gets feedback when they change the shortcut in Settings.
-let announced = false;
+// Serialize registrations so a stale async effect cannot unregister a newer
+// combo or show a second, contradictory toast.
+let bindQueue = Promise.resolve();
+let bindGeneration = 0;
+let hasAttemptedBind = false;
 
 /**
  * Registers the system-wide quick-bar shortcut (re-registering when it changes).
@@ -55,22 +58,32 @@ export function useGlobalQuickBar(combo: string | undefined) {
   useEffect(() => {
     if (!combo) return;
     const accel = toAccelerator(combo);
+    const generation = ++bindGeneration;
     let active = true;
 
-    (async () => {
+    bindQueue = bindQueue.then(async () => {
+      if (!active || generation !== bindGeneration) return;
       try {
-        await unregisterAll(); // clear our previous binding before rebinding
+        await unregisterAll();
+        if (!active || generation !== bindGeneration) return;
         await register(accel, (event) => {
           if (active && event.state === "Pressed") void toggleQuickBar();
         });
-        if (announced) toast.success(`Global quick bar bound to ${formatCombo(combo)}`);
-        announced = true;
+        if (!active || generation !== bindGeneration) return;
+        if (hasAttemptedBind) {
+          toast.success(`Global quick bar bound to ${formatCombo(combo)}`, {
+            id: BIND_TOAST_ID,
+          });
+        }
+        hasAttemptedBind = true;
       } catch (e) {
+        if (!active || generation !== bindGeneration) return;
         console.error("Failed to register global shortcut", accel, e);
-        announced = true;
+        hasAttemptedBind = true;
         toast.error(
           `Couldn't bind ${formatCombo(combo)} — it may be reserved by macOS or another app.`,
           {
+            id: BIND_TOAST_ID,
             action: {
               label: "Keyboard settings",
               onClick: () => void openUrl(KEYBOARD_SETTINGS_URL).catch(() => {}),
@@ -78,11 +91,10 @@ export function useGlobalQuickBar(combo: string | undefined) {
           },
         );
       }
-    })();
+    });
 
     return () => {
       active = false;
-      void unregisterAll().catch(() => {});
     };
   }, [combo]);
 }

@@ -189,17 +189,19 @@ function Column({
               dropSnapshot.isDraggingOver && "bg-muted ring-primary/30 ring-2",
             )}
           >
-            {/* Absolutely positioned so it never shifts the column size. */}
-            {tasks.length === 0 ? (
-              <div
-                className={cn(
-                  "text-muted-foreground/50 pointer-events-none absolute inset-0 flex items-center justify-center text-xs transition-opacity",
-                  dropSnapshot.isDraggingOver && "opacity-0",
-                )}
-              >
-                Drop tasks here
-              </div>
-            ) : null}
+            {/* Always mounted and absolutely positioned: placeholder cleanup
+                only changes opacity, never DOM/layout, so the empty hint cannot
+                twitch when a one-card source becomes empty. */}
+            <div
+              className={cn(
+                "text-muted-foreground/50 pointer-events-none absolute inset-0 flex items-center justify-center text-xs transition-opacity duration-150",
+                tasks.length === 0 && !dropSnapshot.isUsingPlaceholder
+                  ? "opacity-100"
+                  : "opacity-0",
+              )}
+            >
+              Drop tasks here
+            </div>
             {tasks.map((task, index) => (
               <Draggable key={task.id} draggableId={task.id} index={index}>
                 {(provided, snapshot) => (

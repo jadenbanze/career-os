@@ -7,7 +7,7 @@ const KEY = ["settings", "hotkeys"];
 
 /** All configured hotkey combos (falling back to defaults). */
 export function useHotkeys() {
-  return useQuery<Record<HotkeyAction, string>>({
+  const query = useQuery<Record<HotkeyAction, string>>({
     queryKey: KEY,
     queryFn: async () => {
       const entries = await Promise.all(
@@ -18,13 +18,13 @@ export function useHotkeys() {
       );
       return Object.fromEntries(entries) as Record<HotkeyAction, string>;
     },
-    // Show defaults instantly, but always re-read persisted values on mount
-    // (overrides the app-wide staleTime: Infinity, which would otherwise keep
-    // the initialData forever and ignore saved custom combos after a restart).
-    initialData: DEFAULT_HOTKEYS,
-    staleTime: 0,
-    refetchOnMount: "always",
+    // Defaults are display-only placeholders while SQLite settings load. They
+    // must not be treated as hydrated data or the global shortcut briefly binds
+    // the default before rebinding the saved custom combo (two toasts/conflict).
+    placeholderData: DEFAULT_HOTKEYS,
+    staleTime: Infinity,
   });
+  return { ...query, data: query.data ?? DEFAULT_HOTKEYS };
 }
 
 export function useSaveHotkey() {
