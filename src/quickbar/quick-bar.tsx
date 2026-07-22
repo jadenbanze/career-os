@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { emit } from "@tauri-apps/api/event";
 import { getCurrentWindow, Window } from "@tauri-apps/api/window";
 import { ArrowUpRight, Inbox, Loader2, Sparkles } from "lucide-react";
@@ -19,9 +20,13 @@ export function QuickBar() {
   const focusedAt = useRef(0);
   const win = getCurrentWindow();
 
-  const hide = async () => {
+  // Dismiss: hide the whole app first (so the main window isn't revealed /
+  // brought forward), then close this panel. Returns focus to the app you
+  // were in — the panel should never "open Career OS" on dismiss.
+  const dismiss = async () => {
     setText("");
     setBusy(false);
+    await invoke("hide_app").catch(() => {});
     await win.close();
   };
 
@@ -36,7 +41,7 @@ export function QuickBar() {
       } else if (Date.now() - focusedAt.current > 350) {
         // Raycast-style dismiss on blur — but ignore the focus-transition blip
         // right as the window is summoned, or it would vanish instantly.
-        void hide();
+        void dismiss();
       }
     });
     return () => {
@@ -59,7 +64,7 @@ export function QuickBar() {
     } catch (e) {
       console.error("Quick capture failed", e);
     }
-    await hide();
+    await dismiss();
   };
 
   const openApp = async () => {
@@ -67,7 +72,9 @@ export function QuickBar() {
     await main?.show();
     await main?.unminimize();
     await main?.setFocus();
-    await hide();
+    // Intentionally does NOT hide the app — this is the one action that should
+    // bring Career OS forward.
+    await win.close();
   };
 
   return (
@@ -87,7 +94,7 @@ export function QuickBar() {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") capture();
-            if (e.key === "Escape") void hide();
+            if (e.key === "Escape") void dismiss();
           }}
           placeholder="Capture a win, task, or note — AI will file it…"
           className="placeholder:text-muted-foreground flex-1 bg-transparent text-base outline-none"

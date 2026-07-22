@@ -80,7 +80,22 @@ pub fn run() {
             jira::jira_fetch_issues,
             github::github_sync,
             ai::ai_categorize,
+            hide_app,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+/// Hide the whole app (macOS), returning focus to the previously-active app.
+/// Used when the quick bar is dismissed so it doesn't reveal the main window.
+#[tauri::command]
+fn hide_app(app: tauri::AppHandle) {
+    #[cfg(target_os = "macos")]
+    {
+        let _ = app.hide();
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = &app;
+    }
 }
