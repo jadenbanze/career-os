@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { emit } from "@tauri-apps/api/event";
-import { getCurrentWindow, Window } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ArrowUpRight, Inbox, Loader2, Sparkles } from "lucide-react";
 
 import { db } from "@/db/client";
@@ -20,18 +20,13 @@ export function QuickBar() {
   const focusedAt = useRef(0);
   const win = getCurrentWindow();
 
-  // Dismiss: hide the whole app first (so the main window isn't revealed /
-  // brought forward), then close this panel. Returns focus to the app you
-  // were in — the panel should never "open Career OS" on dismiss.
   const dismiss = async () => {
     setText("");
     setBusy(false);
-    await invoke("hide_app").catch(() => {});
-    await win.close();
+    await invoke("dismiss_quickbar_window").catch(() => {});
   };
 
   useEffect(() => {
-    // The window is created visible + focused, so just grab the input.
     focusedAt.current = Date.now();
     inputRef.current?.focus();
     const unlisten = win.onFocusChanged(({ payload: focused }) => {
@@ -68,13 +63,8 @@ export function QuickBar() {
   };
 
   const openApp = async () => {
-    const main = await Window.getByLabel("main");
-    await main?.show();
-    await main?.unminimize();
-    await main?.setFocus();
-    // Intentionally does NOT hide the app — this is the one action that should
-    // bring Career OS forward.
-    await win.close();
+    // This is the one action that deliberately brings Career OS forward.
+    await invoke("show_main_app");
   };
 
   return (

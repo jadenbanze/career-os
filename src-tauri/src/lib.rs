@@ -1,6 +1,7 @@
 mod ai;
 mod github;
 mod jira;
+mod quickbar;
 mod secrets;
 
 use tauri_plugin_sql::{Migration, MigrationKind};
@@ -80,22 +81,20 @@ pub fn run() {
             jira::jira_fetch_issues,
             github::github_sync,
             ai::ai_categorize,
-            hide_app,
+            quickbar::set_quickbar_shortcut,
+            quickbar::dismiss_quickbar_window,
+            quickbar::show_main_app,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
-}
-
-/// Hide the whole app (macOS), returning focus to the previously-active app.
-/// Used when the quick bar is dismissed so it doesn't reveal the main window.
-#[tauri::command]
-fn hide_app(app: tauri::AppHandle) {
-    #[cfg(target_os = "macos")]
-    {
-        let _ = app.hide();
-    }
-    #[cfg(not(target_os = "macos"))]
-    {
-        let _ = &app;
-    }
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| {
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen {
+                has_visible_windows: false,
+                ..
+            } = event
+            {
+                quickbar::show_main_app(app.clone());
+            }
+        });
 }

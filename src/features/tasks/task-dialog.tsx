@@ -96,11 +96,11 @@ export function TaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="w-[calc(100vw-2rem)] sm:w-[32rem] sm:max-w-[32rem]">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit task" : "New task"}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="task-title">Title</Label>
             <Input
@@ -117,11 +117,13 @@ export function TaskDialog({
               id="task-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
+              rows={5}
+              wrap="soft"
+              className="h-32 max-h-32"
               placeholder="Add details, links, context..."
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid min-w-0 grid-cols-2 gap-4 [&>*]:min-w-0">
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={status} onValueChange={setStatus}>
